@@ -1,0 +1,30 @@
+LAYOUT(text="Fdb Command Overview",style="dialog")
+
+GRID
+{
+<T Table1                                                                    >
+   Command    Description
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+ [cmd       |hlp                                                            ]
+                                                                   
+}
+END
+END
+
+ATTRIBUTES
+
+EDIT cmd = FORMONLY.cmd,noentry,comment="Debugger Command" ;
+EDIT hlp = FORMONLY.hlp,noentry,comment="Description for the Command" ;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD rec (FORMONLY.cmd,FORMONLY.hlp);
+END
+

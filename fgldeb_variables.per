@@ -1,0 +1,44 @@
+TOOLBAR
+  ITEM find
+  SEPARATOR
+  ITEM rerun 
+  SEPARATOR
+  ITEM run (TEXT="Run/Cont")
+  ITEM stepinto
+  ITEM stepover
+  ITEM stepout
+  ITEM run2cursor (TEXT="To Cursor")
+END
+
+LAYOUT(text="Variables",style="dialogplusTB")
+GRID
+{
+<T Table1                                                                                                                                                                                     >
+   Name                 Value                                                                                                                                                 Module
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+ [name                 |value                                                                                                                                                |modname      ]
+                                                                   
+}
+END
+END
+
+ATTRIBUTES
+
+EDIT name          = FORMONLY.name,noentry,comment="Variable Name" ;
+EDIT value         = FORMONLY.value,noentry,comment="Variable Value";
+EDIT modname       = FORMONLY.modname,noentry,comment="Module Name";
+TABLE Table1:width = 80;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD variables (FORMONLY.*)
+END
+

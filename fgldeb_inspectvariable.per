@@ -1,0 +1,61 @@
+ACTION DEFAULTS
+  ACTION grab ( TEXT="Grab Var&iable",COMMENT="(Ctrl-i)  Tries to grab the variable from the current source line",ACCELERATOR=CONTROL-I )
+  ACTION viewlocals ( TEXT="&Locals",COMMENT="Shows a dialog with all local variables",ACCELERATOR=CONTROL-L)
+  ACTION viewglobals ( TEXT="&Globals",COMMENT="Shows a dialog with all local variables",ACCELERATOR=CONTROL-G)
+  ACTION addwatch ( TEXT="Add &Watch",COMMENT="Adds the current variable to the watch list",ACCELERATOR=ALT-W)
+  ACTION delwatch ( TEXT="&Delete Watch",COMMENT="Deletes the current variable from the watch list",ACCELERATOR=ALT-D)
+  --ACTION hidewatch ( TEXT="&Hide Watches",COMMENT="Hides the Text Control with the watched variables",ACCELERATOR=ALT-D)
+  ACTION viewwatchlist ( TEXT="&Edit Watches",COMMENT="Edits the list of watched variables",ACCELERATOR=ALT-E)
+  ACTION lookup ( COMMENT="Looks up the name in the variable list", image="zoom",ACCELERATOR=TAB)
+END
+
+TOOLBAR
+  ITEM find
+  SEPARATOR
+  ITEM rerun 
+  SEPARATOR
+  ITEM run (TEXT="Run/Cont")
+  ITEM stepinto
+  ITEM stepover
+  ITEM stepout
+  ITEM run2cursor (TEXT="To Cursor")
+END
+
+LAYOUT(text="Inspect Variables",style="dialogplusTB")
+VBOX
+GROUP(text="Watch Variable Actions")
+GRID
+{
+ [addwatch  :" ":delwatch  :" "viewwatchlist :                      ]
+}
+END --GRID
+END --GROUP
+GROUP(text="Input Variable Name(s)")
+GRID
+{
+ Variable Name [varname                                            :z]
+ Variable Value 
+ [debout                                                             ]
+ [                                                                   ]
+ [                                                                   ]
+ [                                                                   ]
+ [                                                                   ]
+ [                                                                   ]
+ [                                                                   ]
+}
+END --GROUP
+END --GRID
+END --VBOX
+
+
+ATTRIBUTES
+ButtonEdit varname = formonly.g_inspectvariable_name,action=history_show,image="bigcombo";
+Button z:lookup;
+TextEdit debout    =formonly.g_inspectvariable_value, fontPitch=fixed,stretch=both,scrollBars=both,noentry;
+Button addwatch:addwatch;
+Button delwatch:delwatch;
+--Button hidewatch:hidewatch;
+Button viewwatchlist:viewwatchlist;
+--Group watch_vars:text="Watched Variables",tag="watch_group" ;
+--TextEdit watch    =formonly.g_watch, fontPitch=fixed,stretch=both,scrollBars=both,noentry;
+

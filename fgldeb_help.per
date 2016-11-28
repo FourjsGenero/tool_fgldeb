@@ -1,0 +1,30 @@
+ACTION DEFAULTS
+  ACTION close ( Text="&Close", COMMENT="Closes the help window", ACCELERATOR=ESCAPE)
+  ACTION backspace (ACCELERATOR=BACKSPACE)
+  ACTION del (ACCELERATOR=DELETE)
+END
+
+LAYOUT(TEXT="Help Window",style="help")
+GRID
+{
+ [helpstr                                                             ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                                                    ]
+ [                                   :find      :findnext  :close     ] 
+} 
+END
+
+ATTRIBUTES
+
+TextEdit helpstr=formonly.g_helpstr,scrollbars=vertical,stretch=both,fontpitch=fixed;
+Button find:find;
+Button findnext:findnext;
+Button close:close;

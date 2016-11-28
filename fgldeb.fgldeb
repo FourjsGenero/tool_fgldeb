@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<FglDebugger>
+  <Breakpoints/>
+  <HistoryLists>
+    <search/>
+    <inspectvariable/>
+    <fdbcommand/>
+    <functions/>
+    <watches/>
+  </HistoryLists>
+  <Windows>
+    <auto_group hidden="0"/>
+    <watch_group hidden="0"/>
+  </Windows>
+</FglDebugger>

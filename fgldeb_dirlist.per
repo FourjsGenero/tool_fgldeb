@@ -1,0 +1,24 @@
+LAYOUT(text="Choose a Source Directory",style="dialog")
+
+GRID
+{
+<T src_mods                                                                              >
+   Directory
+ [dirname                                                        ]
+ [dirname                                                        ]
+ [dirname                                                        ]
+ [dirname                                                        ]
+ [dirname                                                        ]
+ [dirname                                                        ]
+                                                                   
+}
+END
+END
+
+ATTRIBUTES
+
+EDIT dirname=FORMONLY.dirname,noentry;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD dirlist (FORMONLY.dirname);
+END

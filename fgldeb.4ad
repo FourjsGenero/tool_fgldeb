@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ANSI_X3.4-1968"?>
+<ActionDefaultList>
+  <ActionDefault name="accept"   text="OK"       acceleratorName="Return"/>
+  <ActionDefault name="cancel"   text="Cancel"   acceleratorName="Escape"/>
+  <ActionDefault name="help"     text="Help"     acceleratorName="F1"/>
+  <ActionDefault name="delete"   text="Delete"/>
+
+  <ActionDefault name="nextrow"  text="Next" image="goforw"  comment="" acceleratorName="Down"/>
+  <ActionDefault name="prevrow"  text="Previous" image="gorev" comment="" acceleratorName="Up"/>
+  <ActionDefault name="firstrow" text="First" image="gobegin" comment="" acceleratorName="Home"/>
+  <ActionDefault name="lastrow"  text="Last" image="goend"   comment="" acceleratorName="End"/>
+<!--
+  <ActionDefault name="first"     text="First"    image="gobegin"/>
+  <ActionDefault name="last"      text="Last"     image="goend"/>
+-->
+
+  <ActionDefault name="editcopy"  text="Copy" image="copy"    comment="Copy" acceleratorName="Control-c" />
+  <ActionDefault name="editcut"   text="Cut" image="cut"     comment="Cut" acceleratorName="Control-x" />
+  <ActionDefault name="editpaste" text="Paste" image="paste"   comment="Paste" acceleratorName="Control-v" />
+
+  <ActionDefault name="print" text="Print" image="debug_printer" comment="Print" />
+  <ActionDefault name="help"  text="Help" image="debug_quest"   comment="Context Help" />
+  <ActionDefault name="run" text="Run/Continue" image="debug_run" comment="Run/Continue the program" acceleratorName="F5" />
+  <ActionDefault name="run_args" text="Program arguments..." comment="Opens a dialog to change the program arguments (Control-r)" acceleratorName="Control-r" />
+  <ActionDefault name="rerun" text="Restart" image="debug_restart" comment="(Ctrl-Shift-F5) Restarts the Program" acceleratorName="Control-Shift-F5" />
+  <ActionDefault name="stepinto" text="Step Into" image="debug_stepinto" comment="(F11) single step into the next statement,jumps into functions" acceleratorName="F11" />
+  <ActionDefault name="stepover" text="Step Over" image="debug_stepover" comment="(F10) single step over the next statement" acceleratorName="F10" />
+  <ActionDefault name="stepout" text="Step Out" image="debug_stepout" comment="(Shift-F11) continues until function returns and shows the return value" acceleratorName="Shift-F11" />
+  <ActionDefault name="run2cursor" text="Run to Cursor" image="debug_runtocursor" comment="(F4) runs the program to the line containing the cursor" acceleratorName="F4" acceleratorName2="Control-F10"/>
+  <ActionDefault name="togglebreak" text="Toggle Breakpoint" image="debug_hand" comment="(F9) Toggle breakpoint at current location" acceleratorName="F9" />
+  <ActionDefault name="togglebreakdisable" text="Toggle Breakpoint Enabled/Disabled" comment="(Shift-F9) Toggle the enable of a breakpoint at the current location" acceleratorName="Shift-F9" />
+  <ActionDefault name="addbreak" text="Add Breakpoint in function..." comment="(Ctrl-F9) Opens a dialog to input the function name" acceleratorName="Control-F9" />
+  <ActionDefault name="viewbreak" text="View Breakpoints..." comment="Show all breakpoints" acceleratorName="Control-b" />
+  <ActionDefault name="viewstack" text="View Stack" comment="Shows the current call stack" acceleratorName="Control-s" />
+  <ActionDefault name="viewwatchlist" text="View Watches..." comment="Shows the current variable watch list" acceleratorName="Control-w" />
+  <ActionDefault name="quit" text="Exit" comment="Exits the debugger" acceleratorName="Control-q" />
+  <ActionDefault name="quit" text="Exit" comment="Exits the debugger" acceleratorName="Control-q" />
+  <ActionDefault name="fdbcommand" text="Execute Debugger Command..." comment="performs direct low level commands" acceleratorName="Control-d" />
+  <ActionDefault name="history_show" text="shows history" comment="shows a choice dialog of the history of the current field" acceleratorName="F7" defaultView="no" />
+  <ActionDefault name="history_up" text="History Up" comment="goes up in the history" acceleratorName="Up" defaultView="no" />
+  <ActionDefault name="history_down" text="History Down" comment="goes down in the history" acceleratorName="Down" defaultView="no" />
+  <ActionDefault name="showfdbcommands" text="Show all commands" comment="shows a choice dialog with all available debugger commands" acceleratorName="F8" defaultView="yes" />
+  <ActionDefault name="viewmodules" text="(Control-m) Show Source Modules..." comment="shows all modules with debug line information" acceleratorName="Control-m" />
+  <ActionDefault name="viewfunctions" text="(Control-u) Show Function Names..." comment="shows all function names in this program" acceleratorName="Control-u" />
+  <ActionDefault name="find" text="Find..." comment="(Control-f) Finds the specified text" acceleratorName="Control-f" image="debug_find" />
+  <ActionDefault name="findnext" text="Find Next" comment="Finds the next occurence of the search string" acceleratorName="F3" />
+  <ActionDefault name="about" text="About" comment="Shows the version number" />
+  <ActionDefault name="viewlocals" text="Local Variables..." comment="Inspects the local variables" acceleratorName="Control-l" />
+  <ActionDefault name="viewglobals" text="Global Variables..." comment="Inspects the glocal variables" acceleratorName="Control-g" />
+  <ActionDefault name="inspectvariable" text="Inspect Variable(s)..." comment="Inspects a variable of your choice" image="debug_mag" acceleratorName="Control-i" />
+  <ActionDefault name="top_file" text="The File Menu" comment="test" image="debug_mag" acceleratorName="Alt-f" />
+  <ActionDefault name="restore_breakpoints" text="Restore Breakpoints" comment="Restores the breakpoints from the .fgldeb file" acceleratorName="Alt-r" />
+</ActionDefaultList>

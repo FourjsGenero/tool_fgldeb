@@ -1,0 +1,23 @@
+LAYOUT(text="Input Debugger Command",style="dialog")
+GRID
+{
+<G "Input Debugger Command"                                  >
+ [fdbcommand                                                ]
+  Debugger Output
+ [debout                                                    ]
+ [                                                          ]
+ [                                                          ]
+ [                                                          ]
+ [                                                          ]
+ [                                                          ]
+ [                                                          ]
+ [                                                          ]
+
+}
+end
+
+
+ATTRIBUTES
+ButtonEdit fdbcommand = formonly.g_fdbcommand, action=history_show, image="bigcombo",comment="Browse history with Cursor Up/Down/F7";
+TextEdit debout       =formonly.g_debout, fontPitch=fixed,stretch=both,scrollBars=both;
+

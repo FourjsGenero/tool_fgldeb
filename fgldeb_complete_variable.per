@@ -1,0 +1,27 @@
+LAYOUT(text="Choose a Variable",style="combo")
+
+TABLE Table1(WANTFIXEDPAGESIZE)
+{
+   Variable Name                   global 
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+  [varname                       | global   ]
+}
+END
+
+ATTRIBUTES
+
+EDIT varname      = FORMONLY.varname,noentry,comment="Variable Name" ;
+Checkbox global   = FORMONLY.global ,noentry,comment="Global scope"  ;
+--TABLE Table1 : width=2;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD complete_variable (FORMONLY.varname,FORMONLY.global);
+END
+

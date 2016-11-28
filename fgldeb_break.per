@@ -1,0 +1,39 @@
+ACTION DEFAULTS
+  ACTION delete ( TEXT="&Delete breakpoint",COMMENT="Deletes the focused breakpoint",ACCELERATOR=DELETE )
+  ACTION addbreak ( TEXT="&Add breakpoint...",COMMENT="Opens a dialog to choose a break function",ACCELERATOR=CONTROL-A )
+  ACTION deleteAll ( TEXT="Delete A&ll",COMMENT="Deletes all breakpoints",ACCELERATOR=ALT-L )
+  ACTION jumpto ( TEXT="&Jump To",COMMENT="Jumps to the source location of the breakpoint",ACCELERATOR=ALT-J )
+END
+
+LAYOUT(text="Breakpoints",style="dialog")
+GRID
+{
+<T Table1                                                                                                    >
+  Enable  Nr  Type  Function                         Line   Module                       Hits  
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+ [e     |num|t   |funcName                        |lnum  |modName                       |hits|line|isFunction]
+                                                                   
+}
+END
+END
+
+ATTRIBUTES
+
+Checkbox e = FORMONLY.enable,comment="enable or disable breakpoint",valueChecked="y",valueUnchecked="n",NOT NULL ;
+EDIT num=FORMONLY.breakNum,noentry;
+EDIT t=FORMONLY.breakType,noentry;
+EDIT funcName = FORMONLY.funcName,noentry;
+EDIT lnum = FORMONLY.lineNumber,noentry;
+EDIT modName = FORMONLY.modName,noentry;
+EDIT hits = FORMONLY.hits,noentry;
+EDIT line = FORMONLY.line,HIDDEN;
+EDIT isFunction = FORMONLY.isFunction,HIDDEN;
+Table table1 :table1, style="breaklist";
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD brk (FORMONLY.*);
+END

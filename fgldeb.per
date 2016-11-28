@@ -1,0 +1,146 @@
+TOPMENU
+  GROUP top_file (TEXT="File")
+    --COMMAND save_state    (TEXT="Save breakpoints")
+    COMMAND restore_breakpoints (TEXT="Load breakpoints")
+    COMMAND quit (TEXT="Exit")
+  END
+  GROUP edit (TEXT="Edit")
+    COMMAND find
+    COMMAND findnext
+  END
+  GROUP edit (TEXT="View")
+    COMMAND inspectvariable 
+    COMMAND viewstack     (TEXT="Stack...")
+    COMMAND viewbreak     (TEXT="Breakpoints...")
+    COMMAND viewmodules   (TEXT="Modules...")
+    COMMAND viewfunctions (TEXT="Functions...")
+    COMMAND viewglobals   
+    COMMAND viewlocals   
+    COMMAND viewwatchlist (TEXT="Watches...") 
+  END
+  GROUP run (TEXT="Run")
+    COMMAND run 
+    COMMAND run_args
+    SEPARATOR
+    COMMAND stepinto 
+    COMMAND stepover 
+    COMMAND stepout 
+    SEPARATOR
+    COMMAND fdbcommand 
+  END
+  GROUP breakpoints (TEXT="Breakpoints")
+    COMMAND togglebreak 
+    COMMAND togglebreakdisable 
+    COMMAND addbreak 
+    COMMAND viewbreak (TEXT="Shows all Breakpoints...")
+  END
+  GROUP options (TEXT="Options")
+    COMMAND optgeneral(TEXT="General...")
+  END
+  GROUP help (TEXT="Help")
+    COMMAND help (TEXT="Help",IMAGE="quest")
+    COMMAND about (TEXT="About")
+  END
+END
+
+TOOLBAR
+  ITEM find
+  SEPARATOR
+  ITEM rerun 
+  SEPARATOR
+  ITEM run (TEXT="Run/Cont")
+  ITEM stepinto
+  ITEM stepover
+  ITEM stepout
+  ITEM run2cursor (TEXT="To Cursor")
+  SEPARATOR
+  ITEM inspectvariable (TEXT="Inspect")
+  SEPARATOR
+  ITEM togglebreak (TEXT="Toggle")
+END
+
+
+LAYOUT(text="Debugger",style="basic")
+
+VBOX(tag="main_vbox")
+TABLE(tag="debugger",unmovablecolumns,unsortablecolumns)
+{
+ B  Line
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+[b |lnum |      line                                                                        |ib]
+}
+END
+  HBOX
+  GROUP(TEXT="Auto Variables",tag="auto_group")
+  GRID
+  {   
+   [auto                    ]
+   [                        ]
+   [                        ]
+   [                        ]
+   [                        ]
+  }
+  END
+  END
+  GROUP(TEXT="Watched Variables",tag="watch_group")
+  GRID
+  {   
+   [watch                   ]
+   [                        ]
+   [                        ]
+   [                        ]
+   [                        ]
+  }
+  END
+  END
+  END
+  GRID
+  {   
+   [l1               ] [currFunc                ][l3       ] [cLine] Status [cStatus][hideauto][hidewatch]
+  }
+  END
+END
+
+ATTRIBUTES
+  Label l1:text="Current function",justify=right;
+  Label l3:text="Current Line",justify=right;
+-- the source file
+  Image  b = formonly.b,unhidable,comment="Breakpoints and Line Marker area";
+-- b = formonly.b,WIDGET="BMP",CONFIG="smiley f9";
+  Edit lnum=formonly.lnum,noentry,fontpitch=fixed,comment="Line numbers" ; 
+  Edit line=formonly.line,fontpitch=fixed,noentry,SCROLL,unhidable,comment="Source code lines";
+  Edit ib=formonly.isBreak,fontpitch=fixed,noentry,hidden;
+-- the info fields
+  Edit currfunc = formonly.currFunc,noentry,SCROLL;
+  cLine         = formonly.cLine,noentry;
+  cStatus       = formonly.cStatus,noentry,SCROLL;
+  Button hideauto:togglehideauto,text="Hide &Auto";
+  Button hidewatch:togglehidewatch,text="Hide &Watches";
+--watch textedit
+  TextEdit auto    =formonly.g_auto, fontPitch=fixed,stretch=x,scrollBars=both,noentry,tag="textedit_auto";
+  TextEdit watch    =formonly.g_watch, fontPitch=fixed,stretch=x,scrollBars=both,noentry,tag="textedit_watch";
+
+INSTRUCTIONS 
+  SCREEN RECORD src(formonly.b thru formonly.isBreak)

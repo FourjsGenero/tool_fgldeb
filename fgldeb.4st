@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="ANSI_X3.4-1968"?>
+<StyleList>
+  <Style name="Window.basic">
+     <StyleAttribute name="actionPanelPosition" value="none" />
+     <StyleAttribute name="ringMenuPosition" value="none" />
+  </Style>
+  <Style name="Window.listchoice">
+     <StyleAttribute name="actionPanelPosition" value="none" />
+     <StyleAttribute name="ringMenuPosition" value="none" />
+     <StyleAttribute name="toolBarPosition" value="none" />
+     <StyleAttribute name="windowType" value="modal" />
+     <StyleAttribute name="position" value="center" />
+  </Style>
+  <Style name="Window1.combo1">
+     <StyleAttribute name="actionPanelPosition" value="none" />
+     <StyleAttribute name="ringMenuPosition"    value="none" />
+     <StyleAttribute name="toolBarPosition"     value="none" />
+     <StyleAttribute name="windowType"          value="modal" />
+     <StyleAttribute name="position"            value="field" />
+     <StyleAttribute name="border"              value="frame" />
+     <StyleAttribute name="statusBarType"       value="none" />
+  </Style>
+  <Style name="Window.combo">
+     <StyleAttribute name="actionPanelPosition" value="none" />
+     <StyleAttribute name="ringMenuPosition"    value="none" />
+     <StyleAttribute name="toolBarPosition"     value="none" />
+     <StyleAttribute name="windowType"          value="modal" />
+     <StyleAttribute name="statusBarType"       value="none" />
+     <StyleAttribute name="border"              value="frame" />
+     <StyleAttribute name="position"            value="field" />
+  </Style>
+  <Style name="Window.dialog">
+     <StyleAttribute name="windowType" value="modal" />
+     <StyleAttribute name="sizable" value="yes" />
+     <StyleAttribute name="position" value="center" />
+     <StyleAttribute name="actionPanelPosition" value="bottom" />
+     <StyleAttribute name="ringMenuPosition" value="bottom" />
+     <StyleAttribute name="toolBarPosition" value="none" />
+  </Style>
+  <Style name="Window.dialogplusTB">
+     <StyleAttribute name="windowType" value="modal" />
+     <StyleAttribute name="sizable" value="yes" />
+     <StyleAttribute name="position" value="center" />
+     <StyleAttribute name="actionPanelPosition" value="bottom" />
+     <StyleAttribute name="ringMenuPosition" value="bottom" />
+     <StyleAttribute name="toolBarPosition" value="top" />
+  </Style>
+  <Style name="Window.viewer">
+     <StyleAttribute name="windowType" value="modal" />
+     <StyleAttribute name="sizable" value="yes" />
+     <StyleAttribute name="position" value="center" />
+     <StyleAttribute name="actionPanelPosition" value="none" />
+     <StyleAttribute name="statusBarType"       value="none" />
+     <StyleAttribute name="ringMenuPosition" value="none" />
+     <StyleAttribute name="toolBarPosition" value="none" />
+  </Style>
+  <Style name="Table.breaklist">
+     <StyleAttribute name="highlightCurrentRow" value="yes" />
+     <StyleAttribute name="showGrid" value="no" />
+  </Style>
+</StyleList>
+

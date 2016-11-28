@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ANSI_X3.4-1968"?>
+<ToolBar>
+  <ToolBarItem name="find" />
+  <ToolBarSeparator/>
+  <ToolBarItem name="run" text="Run/Cont" />
+  <ToolBarItem name="stepinto" />
+  <ToolBarItem name="stepover" />
+  <ToolBarItem name="stepout" />
+  <ToolBarItem name="run2cursor" />
+  <ToolBarSeparator/>
+  <ToolBarItem name="togglebreak" text="Toggle" />
+</ToolBar>

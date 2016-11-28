@@ -1,0 +1,27 @@
+LAYOUT(text="Choose a Function",style="combo")
+
+TABLE Table1(WANTFIXEDPAGESIZE)
+{
+   Function Name                 
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+  [funcName                       ]
+}
+END
+
+ATTRIBUTES
+
+EDIT funcName      = FORMONLY.funcName,noentry,comment="Function Name" ;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD complete_function (FORMONLY.*);
+END
+

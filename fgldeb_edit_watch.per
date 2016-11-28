@@ -1,0 +1,37 @@
+ACTION DEFAULTS
+  ACTION delete ( TEXT="&Delete",COMMENT="Deletes the current variable",ACCELERATOR=DELETE )
+  ACTION deleteall ( TEXT="Delete &All",COMMENT="Deletes all variables",ACCELERATOR=ALT-A )
+  ACTION addwatch ( TEXT="Add &Watch...",COMMENT="Opens up the inspect variable dialog",ACCELERATOR=ALT-W)
+END
+
+LAYOUT(text="Watched Variables",style="dialog")
+--featuring the ancient DisplayArray
+GRID
+{
+<T sg                                                        >
+  Watched Variables
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+ [line                                                     ]
+
+}
+END
+-- [accept    :cancel    :delete   :deleteall :]   
+
+ATTRIBUTES
+TABLE sg:;
+line = FORMONLY.line,noentry,SCROLL ;
+--Button accept:accept;
+--Button cancel:cancel;
+--Button delete:delete;
+--Button deleteall:deleteall;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD edit_watch (FORMONLY.line);
+END
+

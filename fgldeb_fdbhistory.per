@@ -1,0 +1,28 @@
+ACTION DEFAULTS
+  ACTION delete ( TEXT="Delete",COMMENT="Deletes the current line",ACCELERATOR=DELETE )
+END
+
+LAYOUT(text="History",style="combo")
+--featuring the ancient DisplayArray
+GRID
+{
+<S sg                                         >
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+ [line                                       ]
+}
+END
+
+ATTRIBUTES
+Scrollgrid sg:GRIDCHILDRENINPARENT;
+line = FORMONLY.line,noentry,SCROLL ;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD hist (FORMONLY.line);
+END
+

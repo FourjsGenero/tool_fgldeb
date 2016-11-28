@@ -1,0 +1,18 @@
+ACTION DEFAULTS
+  ACTION lookup ( COMMENT="Look up the current name in the function list", image="zoom",ACCELERATOR=TAB)
+  ACTION browsefunctions ( TEXT="Browse F&unctions",COMMENT="(Ctrl-u) Shows all functions and allows to select one", ACCELERATOR=CONTROL-U)
+END
+LAYOUT(text="Add Breakpoint in Function",style="dialog")
+GRID
+{
+<G "Add Breakpoint in Function"                                            >
+
+ Input Break Function Name [funcName                                   :z]
+
+}
+end
+
+
+ATTRIBUTES
+ButtonEdit funcName = formonly.g_funcName, action=history_show, image="bigcombo",comment="Browse history with Cursor Up/Down/F7";
+Button z:lookup;

@@ -1,0 +1,25 @@
+LAYOUT(text="View Local Variables")
+GRID
+{
+<T Table1                                                          >
+   Name            Value
+ [varname        |value                                         ]
+ [varname        |value                                         ]
+ [varname        |value                                         ]
+ [varname        |value                                         ]
+ [varname        |value                                         ]
+ [varname        |value                                         ]
+                                                                   
+}
+END
+END
+
+ATTRIBUTES
+
+EDIT varname = FORMONLY.varname,comment="Local Variable Name" ;
+EDIT value = FORMONLY.value,comment="Local Variable Value";
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD loc (FORMONLY.varname,FORMONLY.value);
+END
+

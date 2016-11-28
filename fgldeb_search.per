@@ -1,0 +1,25 @@
+LAYOUT (style="dialog",TEXT="Search")
+GRID
+{
+<G "Search"                                         >
+
+ Find what:  [search                          ] 
+ [""]
+ ------------------------------------------------
+ [""]
+  Options                            Direction
+ [wholeword                       ] [updown   ]
+ [matchcase                       ] [         ]
+ [useMATCHES                      ] [         ]
+                            
+                           
+                          
+}
+END
+
+ATTRIBUTES
+ButtonEdit search  =formonly.srch_search,action = history_show,image="bigcombo" ;
+CHECKBOX wholeword =formonly.srch_wholeword, text="Match &whole word only",NOT NULL;
+CHECKBOX matchcase =formonly.srch_matchcase, text="Match &case",NOT NULL;
+CHECKBOX useMATCHES=formonly.srch_useMATCHES, text="use &MATCHES",NOT NULL;
+RADIOGROUP updown   =formonly.srch_updown   , items= (("Up","&Up"),("Down","&Down")),NOT NULL;

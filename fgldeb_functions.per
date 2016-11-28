@@ -1,0 +1,40 @@
+LAYOUT(text="Inspect Functions",style="dialog")
+HBOX
+TABLE Table1
+{
+   Function Name                 
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+  [funcName                                  ]
+}
+END
+GRID
+{
+  <G "Function Details"                        >
+   Module Name   [modName                    ]
+   Full File Name[fileName                   ]
+   Line Number   [lineNumber]
+}
+END
+END
+
+ATTRIBUTES
+
+EDIT funcName   = FORMONLY.funcName  ,NOENTRY,comment="Function Name" ;
+EDIT modName    = FORMONLY.modName   ,NOENTRY,comment="Module Name" ;
+EDIT fileName   = FORMONLY.fileName  ,NOENTRY,
+                  comment   ="Full File Name of the Module" ;
+EDIT lineNumber = FORMONLY.lineNumber,NOENTRY,comment="Line Number" ;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD functions (FORMONLY.funcName)
+END
+

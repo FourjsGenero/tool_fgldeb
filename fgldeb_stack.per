@@ -1,0 +1,27 @@
+LAYOUT(text="Call Stack",style="listchoice")
+TABLE
+{
+  M  L   Function                         Line   Module
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+ [m |l  |funcName                        |lnum  |modName                       ]
+}
+END
+END
+
+ATTRIBUTES
+
+Image m = FORMONLY.marker ;
+EDIT l = FORMONLY.level,noentry,comment="Level (Depth)" ;
+EDIT funcName = FORMONLY.funcName,noentry;
+EDIT lnum = FORMONLY.lineNumber,noentry;
+EDIT modName = FORMONLY.modName,noentry;
+                                                                                
+INSTRUCTIONS
+SCREEN RECORD stk (FORMONLY.*) ;
+END
+
