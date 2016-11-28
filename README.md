@@ -18,14 +18,14 @@ Email comments/suggestions/wishes to : l s a t 4 j s d o t c o m
 
 ## Compilation in Genero Studio
 
-1. Load the fglped.4pw project
+1. Load the fgldeb.4pw project
 2. Build the project
 
 ## Usage
 
 ### Installation
 
-Before starting fglped, make sure FGLIMAGEPATH points to the icons directory.
+Before starting fgldeb, make sure FGLIMAGEPATH points to the icons directory.
 
 See [Genero BDL documentation](http://www.4js.com/download/documentation)
 for more details about FGLIMAGEPATH.
@@ -38,7 +38,7 @@ Genero graphical mode.
 
 Make sure that FGLSOURCEPATH is defined to point to your program sources.
 
-To invoke the GUI debug tool, just run the program with fglped instead of fglrun:
+To invoke the GUI debug tool, just run the program with fgldeb instead of fglrun:
 
 ```
 % fgldeb myprog
