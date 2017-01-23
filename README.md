@@ -6,6 +6,8 @@ This tool is a GUI interface for the command-line fglrun -d debugger.
 
 Email comments/suggestions/wishes to : l s a t 4 j s d o t c o m
 
+![Genero FGL Debugger User Interface (GDC)](https://github.com/FourjsGenero/tool_fgldeb/raw/master/docs/fgldeb-screen-001.png)
+
 ## Prerequisites
 
 * Genero BDL 1.33+
