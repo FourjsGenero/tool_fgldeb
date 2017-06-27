@@ -1,0 +1,70 @@
+# Property of Four Js*
+# (c) Copyright Four Js 1995, 2017. All Rights Reserved.
+# * Trademark of Four Js Development Tools Europe Ltd
+#   in the United States and elsewhere
+# 
+# Four Js and its suppliers do not warrant or guarantee that these
+# samples are accurate and suitable for your purposes. Their inclusion is
+# purely for information purposes only.
+
+.SUFFIXES: .42s .42f .42m .42r .str .per .4gl .msg .iem
+
+FGLFORM  = fglform -M
+FGLCOMPFLAGS = --resolve-calls -M -W all -Wno-stdsql
+
+ifdef FGLLDPATH
+ifndef WINDIR
+    FGLENV = FGLLDPATH=$(FGLLDPATH)
+else 
+    FGLENV = set FGLLDPATH=$(FGLLDPATH) &&
+endif
+endif
+FGLCOMP = $(FGLENV) fglcomp $(FGLCOMPFLAGS)
+FGLLINK  = fglrun -l
+FGLMKMSG = fglmkmsg
+FGLMKSTR = fglmkstr
+FGLLIB   = libfgl4js.42x
+
+ifndef WINDIR
+  LN = ln -sf
+  RM = rm -f
+else
+  LN   = copy /Y
+  RM   = -DEL /q
+  MAKE = nmake -nologo -f makefile.msc
+endif
+
+.msg.iem:
+	$(FGLMKMSG) $*.msg $*.iem
+
+.str.42s:
+	$(FGLMKSTR) $*.str $*.42s
+
+.per.42f:
+	$(FGLFORM) $*.per
+
+.4gl.42m:
+	$(FGLCOMP) $*.4gl
+
+all:: $(MODULES) $(FORMS) $(TEXTS) $(MESSAGEFILES)
+
+clean::
+	$(RM) *.iem 
+	$(RM) *.42? 
+	$(RM) *.out
+
+ifdef SUBDIRS
+    ifndef WINDIR
+        DOSUBDIRS = for i in $(SUBDIRS) ;do $(MAKE) -w -C $$i $@ || exit; done
+    else
+        DOSUBDIRS = for %%d in ($(SUBDIRS)) do cd %d && $(MAKE) $@ && cd .. || exit 1
+    endif
+
+.PHONY: subdirs
+
+all::
+	$(DOSUBDIRS)
+clean::
+	$(DOSUBDIRS)
+
+endif

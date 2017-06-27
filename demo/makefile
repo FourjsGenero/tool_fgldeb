@@ -10,8 +10,7 @@ SUBDIRS=sub
 
 all:: subdirs 
 
-include ../../../Makeincl
-
+include ../Makeincl
 
 run: all
 	FGLLDPATH=sub fglrun main.42r

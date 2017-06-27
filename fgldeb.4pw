@@ -54,11 +54,30 @@
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
   <Group label="Group" language="Genero">
-    <Application binaryName="Application" dependencies="" id="18741" label="Application">
-      <File filePath="fglped_typewizard.per"/>
-
-
-
+    <Application binaryName="Application" id="18741" label="Application">
+      <File filePath="fgldeb.4ad"/>
+      <File filePath="fgldeb.4gl"/>
+      <File filePath="fgldeb.4st"/>
+      <File filePath="fgldeb.4tb"/>
+      <File filePath="fgldeb.msg"/>
+      <File filePath="fgldeb_addbreak.per"/>
+      <File filePath="fgldeb_break.per"/>
+      <File filePath="fgldeb_complete_function.per"/>
+      <File filePath="fgldeb_complete_variable.per"/>
+      <File filePath="fgldeb_dirlist.per"/>
+      <File filePath="fgldeb_edit_watch.per"/>
+      <File filePath="fgldeb_fdbcommand.per"/>
+      <File filePath="fgldeb_fdbcommandlist.per"/>
+      <File filePath="fgldeb_fdbhistory.per"/>
+      <File filePath="fgldeb_finish.per"/>
+      <File filePath="fgldeb_functions.per"/>
+      <File filePath="fgldeb_help.per"/>
+      <File filePath="fgldeb_inspectvariable.per"/>
+      <File filePath="fgldeb_modules.per"/>
+      <File filePath="fgldeb_search.per"/>
+      <File filePath="fgldeb_stack.per"/>
+      <File filePath="fgldeb_variables.per"/>
+      <File filePath="fgldeb_viewlocals.per"/>
     </Application>
   </Group>
 </Project>
