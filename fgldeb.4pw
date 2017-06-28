@@ -53,13 +53,21 @@
   </Settings>
   <LanguageList version="1.0"/>
   <PlatformList version="1.0"/>
-  <Group label="Group" language="Genero">
-    <Application binaryName="Application" id="18741" label="Application">
+  <Group label="fgldeb_demo" language="Genero">
+    <Application binaryName="demo" id="-941274187" label="demo">
+      <File filePath="demo/main.4gl"/>
+      <File filePath="demo/mod2.4gl"/>
+      <File filePath="demo/mod3.4gl"/>
+      <File filePath="demo/mod4.4gl"/>
+      <File filePath="demo/mod5.4gl"/>
+    </Application>
+    <Application binaryName="fgldeb" commandLineArguments="demo.42r" environment="value:FGLIMAGEPATH=$(ProjectDir)/icons:$(FGLDIR)/lib/image2font.txt||value:FGLSOURCEPATH=$(ProjectDir)/demo" id="18741" label="fgldeb">
       <File filePath="fgldeb.4ad"/>
       <File filePath="fgldeb.4gl"/>
       <File filePath="fgldeb.4st"/>
       <File filePath="fgldeb.4tb"/>
       <File filePath="fgldeb.msg"/>
+      <File filePath="fgldeb.per"/>
       <File filePath="fgldeb_addbreak.per"/>
       <File filePath="fgldeb_break.per"/>
       <File filePath="fgldeb_complete_function.per"/>
