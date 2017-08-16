@@ -7,7 +7,7 @@ DEFINE g_version_str String
 CONSTANT g_version_major=1
 CONSTANT g_version_minor=1
 CONSTANT g_version_patch=1
-CONSTANT BUILD_NUMBER=26
+CONSTANT BUILD_NUMBER=27
 --maximum number of auto variables grabbed from the source
 CONSTANT MAXAUTO = 8
 CONSTANT CVS_DATE="$Date: 2013/04/08 08:33:17 $"
@@ -4115,7 +4115,7 @@ FUNCTION check_printresult()
          CALL get_deb_out()
        END IF
     END IF
-  ELSE IF line.getIndexOf("A parse error in expression.",1)=1 THEN
+  ELSE IF line.getIndexOf("A parse error in expression",1)=1 THEN
     LET result=line
   ELSE
     LET success=1
@@ -4555,8 +4555,12 @@ FUNCTION grab_variables(input_arr)
         IF quote_state THEN
           LET quote_value=quote_value.append(c)
         ELSE
-          LET dot_seen=1
-          LET varname=varname.append(c)
+          IF i+1<=len AND line.getCharAt(i+1)=="*" THEN
+              LET i=i+1
+          ELSE
+            LET dot_seen=1
+            LET varname=varname.append(c)
+          END IF
         END IF
       WHEN "\t"
         GOTO :space
@@ -4842,6 +4846,10 @@ FUNCTION parse_gdb_variable(variable,line)
          END IF
          LET varname=""
          LET value=""
+         IF level<1 OR level>countarr.getLength() THEN
+           --something went wrong here
+           RETURN ""
+         END IF
          LET countarr[level]=countarr[level]+1
        END IF
      OTHERWISE
@@ -5332,17 +5340,19 @@ END FUNCTION
 FUNCTION format_var_arr_print(var_arr,limit_one_line)
   DEFINE var_arr DYNAMIC ARRAY OF STRING
   DEFINE limit_one_line INTEGER
-  DEFINE result,singleres STRING
+  DEFINE result,singleres,tmp STRING
   DEFINE i,success,len,firstnl INTEGER
+  DEFINE sb base.StringBuffer
+  LET sb=base.StringBuffer.create()
   LET len=var_arr.getLength()
   FOR i=1 TO len
     CALL parse_variable(var_arr[i]) RETURNING success,singleres
     IF limit_one_line THEN
-      --cut only the first line from the result set
-      LET firstnl=singleres.getIndexOf("\n",1)
-      IF firstnl<>0 THEN
-        LET singleres=singleres.subString(1,firstnl)
-      END IF
+      --replace \n by space
+      CALL sb.clear()
+      CALL sb.append(singleres)
+      CALL sb.replace("\n"," ",0)
+      LET singleres=sb.toString()
     END IF
     LET result=result.append(singleres)
     IF result.getLength()>0 THEN
