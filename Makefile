@@ -16,6 +16,10 @@ demo::
 run:: all
 	fglrun fgldeb demo/main.42m
 
+dist:: 
+	rm -f fgldeb
+	fglscriptify icons/*.png *.per fgldeb.msg fgldeb.4ad fgldeb.4st fgldeb.4tb fgldeb.4gl
+
 clean::
 	rm -f *.42?
 	make -C demo clean
