@@ -5349,6 +5349,9 @@ FUNCTION format_var_arr_print(var_arr,limit_one_line)
     CALL parse_variable(var_arr[i]) RETURNING success,singleres
     IF limit_one_line THEN
       --replace \n by space
+      IF singleres.getCharAt(singleres.getLength())=="\n" THEN
+        LET singleres=singleres.subString(1,singleres.getLength()-1)
+      END IF
       CALL sb.clear()
       CALL sb.append(singleres)
       CALL sb.replace("\n"," ",0)
