@@ -67,8 +67,7 @@ IMPORT os
 DEFINE tmpdir,fname,full,lastmodule STRING
 DEFINE m_bat INT
 DEFINE singlequote,doublequote,backslash,percent,dollar STRING
-DEFINE m_binarr DYNAMIC ARRAY OF STRING
-DEFINE m_imgarr DYNAMIC ARRAY OF STRING
+DEFINE m_binTypeArr,m_resTypeArr,m_imgarr,m_resarr DYNAMIC ARRAY OF STRING
 MAIN
   DEFINE line,err,catfile STRING
   DEFINE ch,chw base.Channel
@@ -79,15 +78,22 @@ MAIN
   LET backslash=ASCII(92) --we must not use the literal here
   LET percent=ASCII(37)
   LET dollar=ASCII(36)
-  LET m_binarr[m_binarr.getLength()+1]='png' 
-  LET m_binarr[m_binarr.getLength()+1]='jpg'
-  LET m_binarr[m_binarr.getLength()+1]='bmp'
-  LET m_binarr[m_binarr.getLength()+1]='gif'
-  LET m_binarr[m_binarr.getLength()+1]='tiff'
-  LET m_binarr[m_binarr.getLength()+1]='wav'
-  LET m_binarr[m_binarr.getLength()+1]='mp3'
-  LET m_binarr[m_binarr.getLength()+1]='aiff'
-  LET m_binarr[m_binarr.getLength()+1]='mpg'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='png' 
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='jpg'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='bmp'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='gif'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='tiff'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='wav'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='mp3'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='aiff'
+  LET m_binTypeArr[m_binTypeArr.getLength()+1]='mpg'
+
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='per' 
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='4st'
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='4tb'
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='4tm'
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='4sm'
+  LET m_resTypeArr[m_resTypeArr.getLength()+1]='iem'
   LET sb=base.StringBuffer.create()
   LET catfile=fgl_getenv("_CATFILE") --set by calling script
   LET tmpdir=fgl_getenv("_TMPDIR") --set by calling script
@@ -123,9 +129,12 @@ MAIN
          CALL checkSubdirs()
          IF isBinary(fname) THEN
            LET writebin=TRUE
-           CALL addImgDir(os.Path.dirName(fname))
+           CALL addDir(m_imgarr,os.Path.dirName(fname))
            CALL sb.clear()
          ELSE
+           IF isResource(fname) THEN
+             CALL addDir(m_resarr,os.Path.dirName(fname))
+           END IF
            LET write=TRUE
            CALL chw.openFile(full,"w")
          END IF
@@ -149,37 +158,65 @@ MAIN
   CALL runLastModule()
 END MAIN
 
-FUNCTION addImgDir(dirname)
+FUNCTION checkResource()
+  DEFINE ext STRING
+  LET ext=os.Path.extension(fname)
+
+END FUNCTION
+
+FUNCTION addDir(arr,dirname)
+  DEFINE arr DYNAMIC ARRAY OF STRING
   DEFINE dirname STRING
   DEFINE i INT
-  FOR i=1 TO m_imgarr.getLength()
-    IF m_imgarr[i]=dirname THEN
+  FOR i=1 TO arr.getLength()
+    IF arr[i]=dirname THEN
       RETURN --already contained
     END IF
   END FOR
-  LET m_imgarr[m_imgarr.getLength()+1]=dirname
+  LET arr[arr.getLength()+1]=dirname
+END FUNCTION
+
+
+FUNCTION setPathFor(arr,envName,cmd)
+  DEFINE arr DYNAMIC ARRAY OF STRING
+  DEFINE envName STRING
+  DEFINE cmd STRING
+  DEFINE i INT
+  IF arr.getLength()>0 THEN
+    LET cmd=cmd,envName,"="
+    LET cmd=IIF(m_bat,"set ",""),cmd
+    IF fgl_getenv(envName) IS NOT NULL THEN
+      IF m_bat THEN
+        LET cmd=percent,envName,percent,";"
+      ELSE
+        LET cmd=dollar,envName,":"
+      END IF
+    END IF
+    FOR i=1 TO arr.getLength()
+        IF i>1 THEN
+          LET cmd=cmd,IIF(m_bat,";",":")
+        END IF
+        LET cmd=cmd,os.Path.join(tmpdir,arr[i])
+    END FOR
+    LET cmd=cmd,IIF(m_bat,"&&"," ")
+  END IF
+  RETURN cmd
 END FUNCTION
 
 FUNCTION runLastModule() --we must get argument quoting right
   DEFINE i INT
-  DEFINE arg,cmd STRING
+  DEFINE arg,cmd,cmdsave,image2font STRING
   IF lastmodule IS NULL THEN RETURN END IF
-  IF m_imgarr.getLength()>0 THEN
-    LET cmd=IIF(m_bat,"set FGLIMAGEPATH=","FGLIMAGEPATH=")
-    IF fgl_getenv("FGLIMAGEPATH") IS NOT NULL THEN
-      IF m_bat THEN
-        LET cmd=percent,"FGLIMAGEPATH",percent,";"
-      ELSE
-        LET cmd=dollar,"FGLIMAGEPATH:"
-      END IF
+  LET cmd=setPathFor(m_resarr,"FGLRESOURCEPATH",cmd)
+  LET image2font=os.Path.join(os.Path.join(fgl_getenv("FGLDIR"),"lib"),"image2font.txt")
+  LET cmdsave=cmd
+  LET cmd=setPathFor(m_imgarr,"FGLIMAGEPATH",cmd)
+  IF cmd!=cmdsave AND os.Path.exists(image2font) THEN
+    IF m_bat THEN
+      LET cmd=cmd,";",image2font,"&&"
+    ELSE
+      LET cmd=cmd.subString(1,cmd.getLength()-1),":",image2font," "
     END IF
-    FOR i=1 TO m_imgarr.getLength()
-        IF i>1 THEN
-          LET cmd=cmd,IIF(m_bat,";",":")
-        END IF
-        LET cmd=cmd,os.Path.join(tmpdir,m_imgarr[i])
-    END FOR
-    LET cmd=cmd,IIF(m_bat,"&&"," ")
   END IF
   LET cmd=cmd,"fglrun ",os.Path.join(tmpdir,lastmodule)
   FOR i=1 TO num_args()
@@ -290,17 +327,29 @@ FUNCTION quoteDouble(s)
   RETURN sb.toString()
 END FUNCTION
 
-FUNCTION isBinary(fname)
+FUNCTION isInArray(arr,fname)
+  DEFINE arr DYNAMIC ARRAY OF STRING
   DEFINE fname,ext STRING
   DEFINE i INT
   LET ext=os.Path.extension(fname)
-  FOR i=1 TO m_binarr.getLength()
-    IF m_binarr[i]==ext THEN 
+  FOR i=1 TO arr.getLength()
+    IF arr[i]==ext THEN 
       RETURN TRUE
     END IF
   END FOR
   RETURN FALSE
 END FUNCTION
+
+FUNCTION isBinary(fname)
+  DEFINE fname STRING
+  RETURN isInArray(m_binTypeArr,fname)
+END FUNCTION
+
+FUNCTION isResource(fname)
+  DEFINE fname STRING
+  RETURN isInArray(m_resTypeArr,fname)
+END FUNCTION
+
 EOF
 
 #now compile and run catsource from the temp location
