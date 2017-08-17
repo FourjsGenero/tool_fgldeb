@@ -16,9 +16,14 @@ demo::
 run:: all
 	fglrun fgldeb demo/main.42m
 
+define pack
+	fglscriptify $(1) icons/*.png *.per fgldeb.msg fgldeb.4ad fgldeb.4st fgldeb.4tb fgldeb.4gl
+endef
+
 dist:: 
-	rm -f fgldeb
-	fglscriptify icons/*.png *.per fgldeb.msg fgldeb.4ad fgldeb.4st fgldeb.4tb fgldeb.4gl
+	rm -f fgldeb fgldeb.bat
+	$(call pack,)
+	$(call pack,-o fgldeb.bat)
 
 clean::
 	rm -f *.42?

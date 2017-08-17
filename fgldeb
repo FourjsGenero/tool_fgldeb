@@ -158,12 +158,6 @@ MAIN
   CALL runLastModule()
 END MAIN
 
-FUNCTION checkResource()
-  DEFINE ext STRING
-  LET ext=os.Path.extension(fname)
-
-END FUNCTION
-
 FUNCTION addDir(arr,dirname)
   DEFINE arr DYNAMIC ARRAY OF STRING
   DEFINE dirname STRING
@@ -176,15 +170,14 @@ FUNCTION addDir(arr,dirname)
   LET arr[arr.getLength()+1]=dirname
 END FUNCTION
 
-
 FUNCTION setPathFor(arr,envName,cmd)
   DEFINE arr DYNAMIC ARRAY OF STRING
-  DEFINE envName STRING
+  DEFINE envName,tmp STRING
   DEFINE cmd STRING
   DEFINE i INT
   IF arr.getLength()>0 THEN
-    LET cmd=cmd,envName,"="
-    LET cmd=IIF(m_bat,"set ",""),cmd
+    LET tmp=envName,"="
+    LET cmd=cmd,IIF(m_bat,"set ",""),tmp
     IF fgl_getenv(envName) IS NOT NULL THEN
       IF m_bat THEN
         LET cmd=percent,envName,percent,";"
@@ -196,7 +189,7 @@ FUNCTION setPathFor(arr,envName,cmd)
         IF i>1 THEN
           LET cmd=cmd,IIF(m_bat,";",":")
         END IF
-        LET cmd=cmd,os.Path.join(tmpdir,arr[i])
+        LET cmd=cmd,quotePath(os.Path.join(tmpdir,arr[i]))
     END FOR
     LET cmd=cmd,IIF(m_bat,"&&"," ")
   END IF
@@ -213,9 +206,9 @@ FUNCTION runLastModule() --we must get argument quoting right
   LET cmd=setPathFor(m_imgarr,"FGLIMAGEPATH",cmd)
   IF cmd!=cmdsave AND os.Path.exists(image2font) THEN
     IF m_bat THEN
-      LET cmd=cmd,";",image2font,"&&"
+      LET cmd=cmd.subString(1,cmd.getLength()-2),";",quotePath(image2font),"&&"
     ELSE
-      LET cmd=cmd.subString(1,cmd.getLength()-1),":",image2font," "
+      LET cmd=cmd.subString(1,cmd.getLength()-1),":",quotePath(image2font)," "
     END IF
   END IF
   LET cmd=cmd,"fglrun ",os.Path.join(tmpdir,lastmodule)
@@ -236,6 +229,15 @@ FUNCTION runLastModule() --we must get argument quoting right
   END FOR
   --DISPLAY "cmd:",cmd
   CALL myrun(cmd)
+END FUNCTION
+
+FUNCTION quotePath(p)
+  DEFINE p STRING
+  --TODO: quote space with backlash space
+  --IF NOT m_bat AND p.getIndexOf(" ",1)!=0
+    --RETURN quoteSpace(p)
+  --END IF
+  RETURN p
 END FUNCTION
 
 FUNCTION myerr(err)
@@ -275,9 +277,6 @@ FUNCTION checkSubdirs()
   DEFINE i,found INT
   DEFINE dir,err STRING
   DEFINE dirs DYNAMIC ARRAY OF STRING
-  IF m_bat THEN
-    RETURN 
-  END IF
   LET dir=os.Path.fullPath(os.Path.dirName(full))
   WHILE TRUE
     CASE
