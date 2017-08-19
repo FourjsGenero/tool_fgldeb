@@ -27,10 +27,22 @@ Email comments/suggestions/wishes to : l s a t 4 j s d o t c o m
 
 ### Installation
 
-Before starting fgldeb, make sure FGLIMAGEPATH points to the icons directory.
+You don't necessarily need to install fgldeb.
+If you did check out this repository you can call
+```
+$ <path_to_this_repository>/fgldeb <yourprogram> arg 
+```
+and it uses the fglcomp/fglrun in your PATH to compile and run fgldeb along with your debuggee.
+Of course you can add also <path_to_this_repository> in your PATH .
 
-See [Genero BDL documentation](http://www.4js.com/download/documentation)
-for more details about FGLIMAGEPATH.
+If you have Genero version bigger/equal 3.0 you can use the supplied fgldeb scripts in the "script" dir.
+Those scripts are created with fglscriptify and are self extracting,
+self compiling 4GL "scripts".
+Simply copy this single script somewhere to a direcory contained in the PATH and thats all, you can invoke fgldeb.
+All needed assets are contained in this script.
+In fact you don't need then the repository anymore.
+
+
 
 ### Basic invocation
 
