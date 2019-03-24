@@ -32,7 +32,7 @@
   <Style name="Window.dialog">
      <StyleAttribute name="windowType" value="modal" />
      <StyleAttribute name="sizable" value="yes" />
-     <StyleAttribute name="position" value="center" />
+     <StyleAttribute name="position" value="center2" />
      <StyleAttribute name="actionPanelPosition" value="bottom" />
      <StyleAttribute name="ringMenuPosition" value="bottom" />
      <StyleAttribute name="toolBarPosition" value="none" />
@@ -40,7 +40,7 @@
   <Style name="Window.dialogplusTB">
      <StyleAttribute name="windowType" value="modal" />
      <StyleAttribute name="sizable" value="yes" />
-     <StyleAttribute name="position" value="center" />
+     <StyleAttribute name="position" value="center2" />
      <StyleAttribute name="actionPanelPosition" value="bottom" />
      <StyleAttribute name="ringMenuPosition" value="bottom" />
      <StyleAttribute name="toolBarPosition" value="top" />
