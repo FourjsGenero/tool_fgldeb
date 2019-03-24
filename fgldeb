@@ -1,10 +1,16 @@
 #!/bin/bash
-realpath() {
-    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+fullname () {
+  local myDIR=`dirname "$1"`
+  pushd "$myDIR" >/dev/null
+  realDIR=`pwd`
+  popd > /dev/null
+  local basefile=`basename "$1"`
+  echo "$realDIR/$basefile"
 }
 
-SCRIPT_NAME=`realpath $0`
+SCRIPT_NAME=`fullname $0`
 FGLDEBDIR=`dirname $SCRIPT_NAME` 
+#echo "FGLDEBDIR=$FGLDEBDIR"
 #we recompile everything always: hence avoid version clashes
 make -C $FGLDEBDIR clean_prog all > /dev/null
 export FGLDEBDIR
@@ -15,4 +21,12 @@ export FGLIMAGEPATH=$FGLDEBDIR:$FGLDEBDIR/icons:$FGLIMAGEPATH
 if [ -f "$FGLDIR/lib/image2font.txt" ] ; then
   export FGLIMAGEPATH=$FGLIMAGEPATH:"$FGLDIR/lib/image2font.txt"
 fi
+# Ensure fgldeb runs in native mode if going via GDC
+# the custom FGLPROFILE is set by fgldeb when starting the debugee
+# so in unversal rendering the fgldeb UI is native ,
+# the debuggee UI is GBC.
+# This makes it easy to distinguish debugger and debugee
+export FGLDEBFGLPROFILE="$FGLPROFILE"
+#just comment the next line if the debugger should als run with universal rendering
+unset FGLPROFILE
 exec fglrun $FGLDEBDIR/fgldeb.42m "$@" 

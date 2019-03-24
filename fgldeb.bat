@@ -12,6 +12,10 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 for %%F in (*.per) do fglform -M %%F
 set FGLRESOURCEPATH=%FGLDEBDIR%;%FGLRESOURCEPATH%
 set DBPATH=%FGLDEBDIR%:%DBPATH%
+rem ensure fgldeb runs in native
+rem if started fgldeb sets FGLPROFILE for the debuggee
+set FGLDEBFGLPROFILE=%FGLPROFILE%
+set FGLPROFILE=
 set FGLIMAGEPATH=%FGLDEBDIR%\icons;%FGLIMAGEPATH%
 if exist "%FGLDIR%\lib\image2font.txt" ( set "FGLIMAGEPATH=%FGLIMAGEPATH%;%FGLDIR%\lib\image2font.txt")
 %CURDRIVE%

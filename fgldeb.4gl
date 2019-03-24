@@ -206,6 +206,7 @@ MAIN
   LET g_frame_no=0
   LET g_source_changed=0
   LET g_source_lines=0
+  CALL processEnv()
   CALL parse_args() RETURNING g_program,g_args
   --load UI stuff
   CALL ui.Interface.loadActionDefaults("fgldeb")
@@ -3581,27 +3582,28 @@ FUNCTION _setActiveWindow(w)
   DEFINE w String
   DEFINE prevName string
   CALL ui.Interface.frontcall("debugger","setactivewindow", [w],[prevName])
+  --DISPLAY "setactivewindow returns:",prevName
   RETURN prevName
 END FUNCTION
 
 FUNCTION _getActiveWindow()
   DEFINE name string
   CALL ui.Interface.frontcall("debugger","getactivewindow", [],[name])
+  --DISPLAY "getactivewindow returns:",name
   RETURN name
 END FUNCTION
 
 FUNCTION _getDebuggerWindow()
   DEFINE name string
   CALL ui.Interface.frontcall("debugger","getcurrentwindow", [],[name])
+  DISPLAY "getcurrentwindow returns:",name
   RETURN name
 END FUNCTION
 
 FUNCTION raise_debugger(location)
-  DEFINE location,prevWindow,version String
-  --RETURN
-  LET version=ui.interface.getFrontEndVersion()
-  --DISPLAY "raise_debugger ",location,",Version",Version
-  IF _getClientName() = "GDC" AND version>="1.21.1c-261" AND g_debugger_raised=0 THEN
+  DEFINE location,prevWindow String
+  --DISPLAY "raise_debugger ",location,"
+  IF _getClientName() = "GDC" AND g_debugger_raised=0 THEN
     --DISPLAY ">>>_setActiveWindow current"
     LET g_debugger_raised=1
     LET prevWindow = _setActiveWindow("current")
@@ -3616,11 +3618,9 @@ END FUNCTION
 
 FUNCTION raise_debuggee(location)
   DEFINE location String
-  DEFINE dummy,version String
-  --RETURN
-  LET version=ui.interface.getFrontEndVersion()
-  --DISPLAY "raise_debuggeeeee ",location,",Version",Version
-  IF _getClientName() = "GDC" AND version>="1.21.1c-261" AND g_debuggee_widget.getLength()>0 THEN
+  DEFINE dummy String
+  --DISPLAY "raise_debuggeeeee ",location
+  IF _getClientName() = "GDC" AND g_debuggee_widget.getLength()>0 THEN
     --DISPLAY ">>>_setActiveWindow ",g_debuggee_widget
     LET g_debuggee_raised=1
     LET dummy = _setActiveWindow(g_debuggee_widget)
@@ -5947,4 +5947,13 @@ END FUNCTION
 FUNCTION equalStringsAndNULLequalsEmpty(val1,val2)
    define val1,val2 String
    RETURN equalStringsInt(val1,val2,1)
+END FUNCTION
+
+#+ handles some environment vars
+FUNCTION processEnv()
+  DEFINE profile STRING
+  IF (profile:=fgl_getenv("FGLDEBFGLPROFILE")) IS NOT NULL THEN
+    DISPLAY "setting FGLPROFILE to:", profile
+    CALL fgl_setenv("FGLPROFILE",profile)
+  END IF
 END FUNCTION
