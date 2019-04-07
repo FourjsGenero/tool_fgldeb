@@ -93,6 +93,18 @@ terminal (which should not be the current one):
 
 Run "fgldeb" to get all available options.
 
+### Attach to a running fglrun process with fgldeb
+
+Get the process id of the program you want to debug
+and invoke fgldeb with the process id
+
+```
+% fgldeb -p 12345
+```
+
+If you exit fgldeb you have the option either to end the debuggee
+or to detach from the debuggee (then the program being debugged continues running).
+
 ### Setting FGLSOURCEPATH
 
 The fglrun -d debugger needs to know where to find your program sources, by
