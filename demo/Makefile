@@ -17,6 +17,10 @@ run: all
 deb: all
 	FGLLDPATH=sub FGLSOURCEPATH=sub ../fgldeb main
 
+
+attach: all
+	fglrun debugsimple
+
 clean: 
 	rm -f *.42? sub/*.42m
 

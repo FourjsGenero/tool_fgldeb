@@ -4,9 +4,10 @@ IMPORT FGL mod5
 FUNCTION mod2(param)
   DEFINE param String
   DEFINE cmd Integer
-  DEFINE cmdstr String
+  DEFINE cmdstr,hallo String
   DEFINE ret,m String
   CALL set_mod(2) RETURNING m
+  LET hallo=param
   MENU "hallo"
     COMMAND "mod3"
       LET cmd=1
