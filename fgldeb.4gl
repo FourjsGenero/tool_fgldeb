@@ -4,10 +4,10 @@ IMPORT FGL fgldialog
 -- main module for "fgldeb" - the Debugger Frontend for "fglrun -d "
 -------------------------------------------------------------------------------
 DEFINE g_version_str String
-CONSTANT g_version_major=1
-CONSTANT g_version_minor=1
-CONSTANT g_version_patch=1
-CONSTANT BUILD_NUMBER=27
+CONSTANT g_version_major=2
+CONSTANT g_version_minor=0
+CONSTANT g_version_patch=0
+CONSTANT BUILD_NUMBER=29
 --maximum number of auto variables grabbed from the source
 CONSTANT MAXAUTO = 8
 CONSTANT CVS_DATE="$Date: 2013/04/08 08:33:17 $"
@@ -113,6 +113,7 @@ DEFINE g_line_0 Integer
 DEFINE g_verbose Integer
 DEFINE g_frame_no Integer -- current stackframe
 DEFINE g_frame_name String -- current stackframe function name
+DEFINE g_frame_name_parsed String -- frame name extracted in check_new_frame
 DEFINE g_view_function String -- current viewed function
 --the line number and filename for the main function
 DEFINE g_main_lineNumber INTEGER
@@ -187,6 +188,8 @@ DEFINE g_helpcursor INTEGER
 --DEFINE g_cfg_showAuto, g_cfg_showWatch INTEGER
 
 DEFINE g_restore_breakpoints INT
+DEFINE g_program_pid INT
+DEFINE g_newlevel INT
 
 --THE main proc
 MAIN
@@ -197,6 +200,7 @@ MAIN
   DEFINE da_state String
   DEFINE breakNum,dummy Integer
   --initialize globals
+  LET g_program_pid=NULL
   LET g_version_str=sfmt("%1.%2.%3",g_version_major,g_version_minor,g_version_patch)
   LET g_channel=base.channel.create()
   LET g_file_displayed_long=" "
@@ -225,7 +229,7 @@ MAIN
   CALL set_g_state(ST_INITIAL)
   --open form form1 from "fgldeb"
   --display form form1
-  IF length(g_program)==0 THEN
+  IF length(g_program)==0 AND g_program_pid IS NULL THEN
     DISPLAY "usage: fglrun fgldeb <progname>"
     EXIT PROGRAM
   END IF
@@ -235,8 +239,10 @@ MAIN
   END IF
   --CALL deb_write("break main")
   --now disable the currframe
-  LET g_frame_no=0
-  CALL goto_src_line(g_line_0,TRUE) RETURNING dummy
+  IF g_program_pid IS NULL THEN
+    LET g_frame_no=0
+    CALL goto_src_line(g_line_0,TRUE) RETURNING dummy
+  END IF
   --CALL do_run()
   --CALL update_breakpoints()
   --CALL update_stack()
@@ -436,29 +442,57 @@ FUNCTION open_program()
   ELSE
     LET program = "gdb " || g_program
   END IF
-  CALL g_channel.openpipe(program,"u")
-  DISPLAY "program is: \"",program,"\", status is:",status
-  IF status < 0 THEN
-    DISPLAY "can't open :",program
-    EXIT PROGRAM
-  END IF
-  CALL g_channel.setDelimiter("")
-  LET g_active=1
-  IF NOT g_isgdb THEN
+  IF g_program_pid IS NOT NULL THEN
+    CALL attach_to_process(g_channel, g_program_pid)
+    CALL g_channel.writeLine("FGLDB")
+    CALL waitPrompt(g_channel) -- avoids sending commands before the remote is waiting
+    CALL g_channel.setDelimiter("")
+    --CALL g_channel.writeLine("set prompt (fglgui)")
     CALL deb_write("set prompt (fglgui)")
   ELSE
-    CALL deb_write("set prompt (fglgui)\\n")
+    CALL g_channel.openpipe(program,"u")
+    CALL g_channel.setDelimiter("")
+    DISPLAY "program is: \"",program,"\", status is:",status
+    IF status < 0 THEN
+      DISPLAY "can't open :",program
+      EXIT PROGRAM
+    END IF
+    IF NOT g_isgdb THEN
+      CALL deb_write("set prompt (fglgui)")
+    ELSE
+      CALL deb_write("set prompt (fglgui)\\n")
+    END IF
   END IF
+  LET g_active=1
+  LET g_show_output=TRUE
   CALL deb_write("set annotate 1")
   CALL get_deb_out()
   CALL restore_state()
   --CALL update_watch()
   LET g_frame_no=1
   LET g_show_output=TRUE
-  CALL deb_write("info line main")
+  IF g_program_pid IS NULL THEN
+    CALL deb_write("info line main")
+  END IF
+  --if program ois is on we get the current module
   CALL get_deb_out()
-  LET g_show_output=FALSE
-  LET g_frame_no=0
+  IF g_program_pid IS NOT NULL THEN
+    CALL init_frame_no()
+    LET g_show_output=FALSE
+    CALL deb_write("info line main")
+    LET g_deb_out_ignore_linenumber= TRUE --avoids loading
+    CALL get_deb_out()
+    LET g_deb_out_ignore_linenumber= FALSE
+    LET g_main_lineNumber=g_deb_out_line
+    LET g_main_modName = g_deb_out_filename
+    LET g_state=ST_RUNNING
+  ELSE
+    LET g_show_output=FALSE
+    LET g_main_lineNumber=g_line_0
+    LET g_main_modName =g_file_0
+    LET g_frame_no=0
+  END IF
+  --DISPLAY sfmt("open_program g_main_lineNumber:%1,g_main_modName:%2",g_main_lineNumber,g_main_modName)
   IF g_file_displayed_long = " " THEN
     CALL no_source()
   END IF
@@ -467,8 +501,42 @@ FUNCTION open_program()
     CALL deb_write("tty "||g_tty)
     CALL get_deb_out()
   END IF
-  LET g_main_lineNumber=g_line_0
-  LET g_main_modName =g_file_0
+END FUNCTION
+
+FUNCTION attach_to_process(c, pid)
+  DEFINE c base.Channel
+  DEFINE pid INT
+  CONSTANT port = 4711
+  CONSTANT host = "localhost"
+
+  CALL _sendSIGTRAP(pid)
+  TRY
+    CALL c.openClientSocket(host, port, "u", 10);
+  CATCH
+    SLEEP 1
+    TRY
+      CALL c.openClientSocket(host, port, "u", 10);
+    CATCH
+      DISPLAY SFMT("ERROR: attach to process %1 failed.", pid);
+      EXIT PROGRAM 1
+    END TRY
+  END TRY
+END FUNCTION
+
+FUNCTION waitPrompt(c)
+  CONSTANT prompt = "(fgldb)"
+  DEFINE c base.Channel
+  DEFINE s char(8) -- "(fgldb)" + a trailing blank
+  DEFINE i INT
+  LET s = _readOctets(c,8)
+  WHILE s <> prompt AND NOT c.isEof()
+      LET s = s[2, 8], _readOctets(c,1)
+  END WHILE
+  IF c.isEof() THEN
+    DISPLAY "debuggee closed in waitPrompt()"
+    EXIT PROGRAM 1
+  END IF
+  DISPLAY "waitPrompt ready"
 END FUNCTION
 
 FUNCTION no_source()
@@ -750,18 +818,12 @@ FUNCTION do_stepout_int()
   CALL do_debugger_step_cmd("finish")
 END FUNCTION
 
---parses the command line arguments of this program
---and returns the program name and arguments for the debuggee
-FUNCTION parse_args()
-  DEFINE i Integer
-  DEFINE debugger_args,arg_count Integer
-  DEFINE arg_arr DYNAMIC ARRAY OF String
-  DEFINE program,args String
-  LET g_verbose=0
-  LET debugger_args=0
-  LET arg_count=0
-  LET program=""
-  --DISPLAY "num_args are:",num_args()
+FUNCTION prepare_args(arg_arr,debugger_args)
+  DEFINE arg_arr DYNAMIC ARRAY OF STRING
+  DEFINE debugger_args INT
+  DEFINE arg_count,i INT
+  DEFINE program,args STRING
+  CALL arg_arr.clear()
   FOR i=1 TO num_args()
     IF arg_val(i) = "--" THEN
       LET debugger_args=1
@@ -776,25 +838,28 @@ FUNCTION parse_args()
         --DISPLAY "arg_count is ",arg_count
         LET arg_arr[arg_count]=arg_val(i)
       ELSE
-        IF arg_val(i)="-v" OR arg_val(i)="--verbose" THEN
-          LET g_verbose=1
-        ELSE IF arg_val(i)="-V" OR arg_val(i)="--version" THEN
-          CALL display_version()
-        ELSE IF arg_val(i)="-g" OR arg_val(i)="--gdb" THEN
-          LET g_isgdb=1
-        ELSE IF arg_val(i)="-h" OR arg_val(i)="--help" THEN
-          CALL arg_help()
-        ELSE IF arg_val(i)="-t" OR arg_val(i)="--tty" THEN
-          LET g_tty = arg_val(i+1)
-          LET i = i + 1
-        ELSE IF arg_val(i)="-r" OR arg_val(i)="--restore_breakpoints" THEN
-          LET g_restore_breakpoints=1
-        END IF
-        END IF
-        END IF
-        END IF
-        END IF
-        END IF
+        CASE
+          WHEN arg_val(i)="-v" OR arg_val(i)="--verbose"
+            LET g_verbose=1
+          WHEN arg_val(i)="-V" OR arg_val(i)="--version"
+            CALL display_version()
+          WHEN arg_val(i)="-g" OR arg_val(i)="--gdb"
+             LET g_isgdb=1
+          WHEN arg_val(i)="-h" OR arg_val(i)="--help"
+            CALL arg_help()
+          WHEN arg_val(i)="-t" OR arg_val(i)="--tty"
+            LET g_tty = arg_val(i+1)
+            LET i = i + 1
+          WHEN arg_val(i)="-r" OR arg_val(i)="--restore_breakpoints"
+            LET g_restore_breakpoints=1
+          WHEN arg_val(i)="-p" OR arg_val(i)="--pid"
+            LET g_program_pid = arg_val(i+1)
+            LET i = i + 1
+            IF fgl_getversion() < 30000 THEN
+              DISPLAY "-p or --pid option not supported for FGL < 3.00"
+              EXIT PROGRAM 1
+            END IF
+        END CASE
       END IF
     END IF
     END IF
@@ -809,10 +874,34 @@ FUNCTION parse_args()
       END IF
     END IF
   END FOR
+  RETURN program,args
+END FUNCTION
+--parses the command line arguments of this program
+--and returns the program name and arguments for the debuggee
+FUNCTION parse_args()
+  DEFINE i Integer
+  DEFINE debugger_args,arg_count Integer
+  DEFINE arg_arr DYNAMIC ARRAY OF String
+  DEFINE program,arg,args,dummy String
+  LET g_verbose=0
+  LET debugger_args=0
+  LET arg_count=0
+  LET program=""
+  --DISPLAY "num_args are:",num_args()
+  CALL prepare_args(arg_arr,debugger_args) RETURNING program,args
   IF g_verbose THEN
-    DISPLAY "program is \"",program,"\", args are \"",args,"\""
+    DISPLAY "parse_args1:program is \"",program,"\", args are \"",args,"\""
   END IF
-  IF program IS NULL OR ( program == "-h" OR program == "--help") THEN
+  IF (program.getIndexOf("-",1)==1 AND g_program_pid IS NULL ) AND
+    (find_string_in_array("-p",arg_arr)<>0 OR
+     find_string_in_array("--pid",arg_arr)<>0 ) THEN
+    --just reparse and pretend we did see a "--"
+    --to avoid being forced using 'fgldeb -- -p <pid>'
+    CALL prepare_args(arg_arr,TRUE) RETURNING dummy,dummy
+    LET program=""
+  END IF
+  IF (program IS NULL AND g_program_pid IS NULL ) OR
+    ( program == "-h" OR program == "--help") THEN
     CALL arg_help()
   ELSE IF ( program == "-V" OR program == "--version") THEN
     CALL display_version()
@@ -822,14 +911,17 @@ FUNCTION parse_args()
 END FUNCTION
 
 FUNCTION arg_help()
-  DISPLAY "Usage: fgldeb program(.42r|.42m) [programopts] [-- debuggeropts]"
+  DISPLAY "Usage 1: fgldeb program(.42r|.42m) [programopts] [-- debuggeropts]"
   DISPLAY "  Debugger options:"
   DISPLAY "    -V or --version   : Display version information"
   DISPLAY "    -h or --help      : Display this help"
-  DISPLAY "    -g or --gdb       : spawn gdb instead of 'fglrun -d'"
   DISPLAY "    -t <tty>or --tty <tty> :"
   DISPLAY "                        run debuggee with FGLGUI=0 in the terminal"
   DISPLAY "    -v or --verbose   : creates a lot of debug output"
+  DISPLAY "Usage 2: fgldeb [debuggeropts + attachopt]"
+  DISPLAY "  Attach option:"
+  DISPLAY "    -p <pid> or --pid <pid> :"
+  DISPLAY "                        attach to fglrun process with pid"
   EXIT PROGRAM 0
 END FUNCTION
 
@@ -1190,7 +1282,20 @@ FUNCTION get_deb_out_int()
   LET idx=0
   --read in the lines from the channel
   WHILE 1
-    LET result=g_channel.read(linestr)
+    IF g_program_pid IS NOT NULL THEN
+      LET linestr = _readLine(g_channel)
+      IF g_channel.isEof() THEN
+        LET result=0
+      ELSE
+        LET result=TRUE
+      END IF
+    ELSE
+      LET result=g_channel.read(linestr)
+    END IF
+    IF int_flag THEN
+      DISPLAY "get_deb_out_int() int_flag seen,result:",result,",linestr:",linestr
+      CALL _sendSIGINT(g_program_pid)
+    END IF
     IF result= 0 THEN
        CALL set_g_state(ST_STOPPED)
        DISPLAY "fgldeb:debugger backend terminated"
@@ -1214,7 +1319,7 @@ FUNCTION get_deb_out_int()
     END IF
     LET len=linestr.getLength()
     IF g_show_output THEN
-      IF linestr="(fglgui)" THEN
+      IF linestr="(fglgui)" OR linestr="(fgldb) " THEN
         EXIT WHILE
       END IF
       DISPLAY linestr
@@ -1232,7 +1337,7 @@ FUNCTION get_deb_out_int()
     --    END IF
     --    END IF
       END IF
-      IF linestr="(fglgui)" THEN
+      IF linestr="(fglgui)" OR linestr="(fgldb) " THEN
         EXIT WHILE
       END IF
     END IF
@@ -1607,6 +1712,21 @@ FUNCTION update_stack()
   CALL check_function_finish()
 END FUNCTION
 
+--get the initial frame level when attaching
+FUNCTION init_frame_no()
+  CALL deb_write("frame")
+  CALL get_deb_out()
+  IF deb_arr.getLength()<1 THEN
+    DISPLAY "ERROR: no frame"
+    EXIT PROGRAM 1
+  END IF
+  IF check_new_frame(g_frame_no) THEN
+    --DISPLAY sfmt("init_frame_no g_frame_no:%1,g_newlevel:%2",g_frame_name,g_newlevel)
+    LET g_frame_no=g_newlevel
+  END IF
+  LET g_frame_name=g_frame_name_parsed
+END FUNCTION
+
 FUNCTION update_stack1()
   DEFINE i,len,stk_count,endLevel,endFunc,startMod,endMod,found Integer
   DEFINE j,stk_len,auto_len INTEGER
@@ -1976,15 +2096,31 @@ END FUNCTION
 --lets the debugger die
 FUNCTION do_quit(state)
   DEFINE state STRING
+  DEFINE detach INT
   -- postpone this until stable
-  IF yesno("Exit the debugger")="no" THEN
-    RETURN state
+  IF g_program_pid IS NOT NULL THEN
+    MENU ATTRIBUTE(STYLE="dialog",COMMENT="Detach or exit from program ?\n(Detach lets the progam continue.)")
+      COMMAND "Detach"
+        LET detach=TRUE
+      COMMAND "Exit"
+      COMMAND "Cancel"
+        RETURN state
+    END MENU
+  ELSE
+    IF yesno("Exit the debugger")="no" THEN
+      RETURN state
+    END IF
   END IF
   CALL save_state()
   IF g_active THEN
     LET g_quit=1
-    CALL deb_write("quit")
-    CALL get_deb_out()
+    IF detach THEN
+      CALL deb_write("detach")
+      CALL g_channel.close()
+    ELSE
+      CALL deb_write("quit")
+      CALL get_deb_out()
+    END IF
   END IF
   RETURN "exitapp"
 END FUNCTION
@@ -2607,7 +2743,7 @@ FUNCTION show_stack()
       IF g_state<>ST_RUNNING THEN
         CONTINUE DISPLAY
       END IF
-      IF g_frame_no <= stk_arr.getLength() THEN
+      IF g_frame_no <= stk_arr.getLength() AND g_frame_no>0 THEN
         LET stk_arr[g_frame_no].marker="debug_frame"
         CALL fgl_set_arr_curr(g_frame_no)
       END IF
@@ -2659,15 +2795,18 @@ END FUNCTION
 FUNCTION check_new_frame(frame_no)
   DEFINE frame_no INTEGER
   DEFINE frameline,levelStr STRING
-  DEFINE endpos,newlevel INTEGER
+  DEFINE endpos,modstart,modend INTEGER
   --DISPLAY "check_new_frame:",frame_no,",deb_arr_len:",deb_arr_len
   IF deb_arr_len>0 THEN
     LET frameline=deb_arr[1]
     IF frameline.getCharAt(1)="#" THEN
        LET endpos=frameline.getIndexOf(" ",1)-1
        LET levelStr=frameline.subString(2,endpos)
-       LET newlevel=levelStr
-       IF newlevel=frame_no THEN
+       LET modstart=endpos+2
+       LET modend=frameline.getIndexOf(" ",modstart)-1
+       LET g_frame_name_parsed=frameline.subString(modstart,modend)
+       LET g_newlevel=levelStr
+       IF g_newlevel=frame_no THEN
          RETURN 1
        END IF
     END IF
@@ -5436,6 +5575,19 @@ FUNCTION find_var_name(varname,var_arr,len)
   RETURN 0
 END FUNCTION
 
+FUNCTION find_string_in_array(tofind,arr)
+  DEFINE tofind STRING
+  DEFINE arr DYNAMIC ARRAY OF STRING
+  DEFINE len,i INTEGER
+  LET len=arr.getLength()
+  FOR i=1 TO len
+    IF tofind.equals(arr[i]) THEN
+      RETURN i
+    END IF
+  END FOR
+  RETURN 0
+END FUNCTION
+
 FUNCTION do_auto_add(var_arr)
   DEFINE var_arr, grab_arr, new_arr ,found_arr, res_arr DYNAMIC ARRAY OF STRING
   DEFINE var_arr_len,grab_arr_len,new_arr_len,found_arr_len,res_arr_len INTEGER
@@ -5957,3 +6109,41 @@ FUNCTION processEnv()
     CALL fgl_setenv("FGLPROFILE",profile)
   END IF
 END FUNCTION
+
+&ifdef HAVE_FGLDB
+#VM 3.00 fgldb functions
+FUNCTION _sendSIGTRAP(pid)
+  DEFINE pid INT
+  CALL __fgldb_sendSIGTRAP(pid)
+END FUNCTION
+FUNCTION _sendSIGINT(pid)
+  DEFINE pid INT
+  CALL __fgldb_sendSIGINT(pid)
+END FUNCTION
+FUNCTION _readLine(channel)
+  DEFINE channel base.Channel
+  RETURN __fgldb_readLine(g_channel)
+END FUNCTION
+FUNCTION _readOctets(channel,length)
+  DEFINE channel base.Channel
+  DEFINE length INT
+  RETURN channel.readOctets(length)
+END FUNCTION
+&else
+#dummy wrappers
+FUNCTION _sendSIGTRAP(pid)
+  DEFINE pid INT
+END FUNCTION
+FUNCTION _sendSIGINT(pid)
+  DEFINE pid INT
+END FUNCTION
+FUNCTION _readLine(channel)
+  DEFINE channel base.Channel
+  RETURN " " CLIPPED
+END FUNCTION
+FUNCTION _readOctets(channel,length)
+  DEFINE channel base.Channel
+  DEFINE length INT
+  RETURN " " CLIPPED
+END FUNCTION
+&endif
