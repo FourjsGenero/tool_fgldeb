@@ -22,5 +22,5 @@ attach: all
 	fglrun debugsimple
 
 clean: 
-	rm -f *.42? sub/*.42m
+	rm -f *.42? sub/*.42m simple.pid
 
