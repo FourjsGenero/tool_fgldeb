@@ -1,4 +1,4 @@
-IMPORT FGL mod2
+IMPORT FGL simplemenu
 MAIN
   DEFINE c base.Channel
   LET c=base.Channel.create()
@@ -14,5 +14,5 @@ PRIVATE FUNCTION sub()
 END FUNCTION
 
 PRIVATE FUNCTION subsub()
-  CALL mod2("simple") RETURNING status,status
+  CALL simple_menu("simple") RETURNING status,status
 END FUNCTION
