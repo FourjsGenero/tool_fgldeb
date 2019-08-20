@@ -1,4 +1,5 @@
 *.42?
 bin
-fgldeb.4pwdb
-fgldeb.4pwvs
+*.4pwdb
+*.4pwvs
+*.4pwcfg
