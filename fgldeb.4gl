@@ -190,6 +190,7 @@ DEFINE g_helpcursor INTEGER
 DEFINE g_restore_breakpoints INT
 DEFINE g_program_pid INT
 DEFINE g_newlevel INT
+DEFINE g_clientName STRING
 
 --THE main proc
 MAIN
@@ -1426,12 +1427,14 @@ FUNCTION get_deb_out_int()
   END IF
   IF fatalerror=1 THEN
     CALL update_status(0,"get_deb_out_int")
+    CALL raise_debugger("fatalerror")
     CALL fgl_winmessage(deb_arr[1],deb_arr[2],"stop")
   END IF
   IF check_exit AND lastline IS NOT NULL THEN
     IF lastline.getIndexOf("Program exited",1)=1 THEN
       DISPLAY "fgldeb:Program exited"
       CALL set_g_state(ST_STOPPED)
+      CALL raise_debugger("program_exit")
       CALL fgl_winmessage("Debugger",lastline,"stop")
     END IF
   END IF
@@ -1819,6 +1822,7 @@ FUNCTION check_function_finish()
         CALL fgl_settitle(sfmt("Step out of %1",finish_arr[i].funcName))
         DISPLAY finish_arr[i].funcName TO finishFunc
         DISPLAY g_finish_result TO finishResult
+        CALL raise_debugger("fgldeb_finish")
         MENU "Step Out"
           COMMAND "Ok"
             EXIT MENU
@@ -3709,40 +3713,54 @@ FUNCTION file_exists(f)
 END FUNCTION
 
 FUNCTION _getClientName()
-  DEFINE fename String
-  CALL ui.Interface.frontcall("standard","feinfo", ["fename"],[fename])
-  IF fename="Genero Desktop Client" THEN
-    LET fename="GDC"
+  DEFINE fename STRING
+  IF g_clientName IS NOT NULL THEN
+    RETURN g_clientName
   END IF
-  RETURN fename
+  IF ui.Interface.getFrontEndName()=="GDC" THEN --included Universal Rendering
+    LET g_clientName="GDC"
+  ELSE
+    CALL ui.Interface.frontcall("standard","feinfo", ["fename"],[fename])
+    IF fename="Genero Desktop Client" THEN
+      LET g_clientName="GDC"
+    END IF
+  END IF
+  RETURN g_clientName
 END FUNCTION
 
 FUNCTION _setActiveWindow(w)
   DEFINE w String
   DEFINE prevName string
-  CALL ui.Interface.frontcall("debugger","setactivewindow", [w],[prevName])
-  --DISPLAY "setactivewindow returns:",prevName
+  TRY
+    CALL ui.Interface.frontcall("debugger","setactivewindow", [w],[prevName])
+    --DISPLAY sfmt("setactivewindow(%1) returns:%2",w,prevName)
+  END TRY
   RETURN prevName
 END FUNCTION
 
 FUNCTION _getActiveWindow()
   DEFINE name string
-  CALL ui.Interface.frontcall("debugger","getactivewindow", [],[name])
-  --DISPLAY "getactivewindow returns:",name
+  TRY
+    CALL ui.Interface.frontcall("debugger","getactivewindow", [],[name])
+    --DISPLAY "getactivewindow returns:",name
+  END TRY
   RETURN name
 END FUNCTION
 
 FUNCTION _getDebuggerWindow()
   DEFINE name string
-  CALL ui.Interface.frontcall("debugger","getcurrentwindow", [],[name])
-  DISPLAY "getcurrentwindow returns:",name
+  TRY
+    CALL ui.Interface.frontcall("debugger","getcurrentwindow", [],[name])
+    --DISPLAY "getcurrentwindow returns:",name
+  END TRY
   RETURN name
 END FUNCTION
 
 FUNCTION raise_debugger(location)
-  DEFINE location,prevWindow String
+  DEFINE location,prevWindow,cli String
   --DISPLAY "raise_debugger ",location,"
-  IF _getClientName() = "GDC" AND g_debugger_raised=0 THEN
+  LET cli = _getClientName()
+  IF (cli = "GDC" OR cli=="GBC") AND g_debugger_raised=0 THEN
     --DISPLAY ">>>_setActiveWindow current"
     LET g_debugger_raised=1
     LET prevWindow = _setActiveWindow("current")
