@@ -3717,10 +3717,12 @@ FUNCTION _getClientName()
   IF g_clientName IS NOT NULL THEN
     RETURN g_clientName
   END IF
-  IF ui.Interface.getFrontEndName()=="GDC" THEN --included Universal Rendering
-    LET g_clientName="GDC"
+  LET fename = ui.Interface.getFrontEndName()
+  IF fename == "GDC" OR fename == "GBC" THEN --included Universal Rendering
+    LET g_clientName = fename
   ELSE
     CALL ui.Interface.frontcall("standard","feinfo", ["fename"],[fename])
+    LET g_clientName = fename
     IF fename="Genero Desktop Client" THEN
       LET g_clientName="GDC"
     END IF
@@ -3757,9 +3759,9 @@ FUNCTION _getDebuggerWindow()
 END FUNCTION
 
 FUNCTION raise_debugger(location)
-  DEFINE location,prevWindow,cli String
-  --DISPLAY "raise_debugger ",location,"
+  DEFINE location, prevWindow, cli STRING
   LET cli = _getClientName()
+  --DISPLAY "raise_debugger ",location,"cli:",cli
   IF (cli = "GDC" OR cli=="GBC") AND g_debugger_raised=0 THEN
     --DISPLAY ">>>_setActiveWindow current"
     LET g_debugger_raised=1
@@ -3774,10 +3776,11 @@ FUNCTION raise_debugger(location)
 END FUNCTION
 
 FUNCTION raise_debuggee(location)
-  DEFINE location String
+  DEFINE location, cli STRING
   DEFINE dummy String
   --DISPLAY "raise_debuggeeeee ",location
-  IF _getClientName() = "GDC" AND g_debuggee_widget.getLength()>0 THEN
+  LET cli = _getClientName()
+  IF (cli = "GDC" OR cli == "GBC") AND g_debuggee_widget.getLength() > 0 THEN
     --DISPLAY ">>>_setActiveWindow ",g_debuggee_widget
     LET g_debuggee_raised=1
     LET dummy = _setActiveWindow(g_debuggee_widget)
