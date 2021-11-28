@@ -10,9 +10,9 @@ Email comments/suggestions/wishes to : l s a t 4 j s d o t c o m
 
 ## Prerequisites
 
-* Genero BDL 3.20+
-* Genero Desktop Client 3.20+
-* GBC 1.00.52+
+* Genero BDL 2.40+
+* Genero Desktop Client 2.40+
+* GBC 1.40+
 * GNU Make
 * optional : Genero Studio 3.20+
 
