@@ -3734,8 +3734,11 @@ FUNCTION _setActiveWindow(w)
   DEFINE w String
   DEFINE prevName string
   TRY
+    --DISPLAY "setactivewindow:",w
     CALL ui.Interface.frontcall("debugger","setactivewindow", [w],[prevName])
     --DISPLAY sfmt("setactivewindow(%1) returns:%2",w,prevName)
+  CATCH
+    DISPLAY "_setActiveWindow error:",err_get(status)
   END TRY
   RETURN prevName
 END FUNCTION
@@ -3745,6 +3748,8 @@ FUNCTION _getActiveWindow()
   TRY
     CALL ui.Interface.frontcall("debugger","getactivewindow", [],[name])
     --DISPLAY "getactivewindow returns:",name
+  CATCH
+    DISPLAY "_getActiveWindow error:",err_get(status)
   END TRY
   RETURN name
 END FUNCTION
@@ -3754,6 +3759,8 @@ FUNCTION _getDebuggerWindow()
   TRY
     CALL ui.Interface.frontcall("debugger","getcurrentwindow", [],[name])
     --DISPLAY "getcurrentwindow returns:",name
+  CATCH
+    DISPLAY "_getDebuggerWindow error:",err_get(status)
   END TRY
   RETURN name
 END FUNCTION
