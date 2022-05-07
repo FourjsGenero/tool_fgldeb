@@ -189,6 +189,7 @@ DEFINE g_helpcursor INTEGER
 
 DEFINE g_restore_breakpoints INT
 DEFINE g_program_pid INT
+DEFINE g_remote_host STRING
 DEFINE g_newlevel INT
 DEFINE g_clientName STRING
 
@@ -230,9 +231,8 @@ MAIN
   CALL set_g_state(ST_INITIAL)
   --open form form1 from "fgldeb"
   --display form form1
-  IF length(g_program)==0 AND g_program_pid IS NULL THEN
-    DISPLAY "usage: fglrun fgldeb <progname>"
-    EXIT PROGRAM
+  IF length(g_program)==0 AND NOT pidOrRemote() THEN
+    CALL arg_help()
   END IF
   CALL open_program()
   IF g_active=0 THEN
@@ -421,11 +421,28 @@ LABEL mytogglebreak:
   CALL g_channel.close()
 END MAIN
 
+FUNCTION handleFGLDB()
+  DEFINE s STRING
+  CALL g_channel.writeLine("FGLDB")
+  CALL waitPrompt(g_channel) -- avoids sending commands before the remote is waiting
+  CALL g_channel.setDelimiter("")
+  CALL g_channel.writeLine("set prompt (fglgui)")
+  LET s = g_channel.readLine()
+  WHILE NOT g_channel.isEof() AND s <> "(fglgui)"
+    LET s = g_channel.readLine()
+  END WHILE
+  IF g_channel.isEof() THEN
+    DISPLAY "ERROR: connection closed by peer."
+    EXIT PROGRAM 1
+  END IF
+END FUNCTION
+
 --opens up a pipe to "fglrun -d" or gdb and
 --intializes breakpoints and the main line number
 FUNCTION open_program()
   DEFINE program String
-  DEFINE fglrun String
+  DEFINE fglrun, host String
+  DEFINE port INT
   IF NOT g_isgdb THEN
     IF fgl_getenv("FGLRUN") IS NOT NULL THEN
       LET fglrun = fgl_getenv("FGLRUN")
@@ -443,14 +460,16 @@ FUNCTION open_program()
   ELSE
     LET program = "gdb " || g_program
   END IF
-  IF g_program_pid IS NOT NULL THEN
+  CASE
+  WHEN g_program_pid IS NOT NULL
     CALL attach_to_process(g_channel, g_program_pid)
-    CALL g_channel.writeLine("FGLDB")
-    CALL waitPrompt(g_channel) -- avoids sending commands before the remote is waiting
-    CALL g_channel.setDelimiter("")
-    --CALL g_channel.writeLine("set prompt (fglgui)")
-    CALL deb_write("set prompt (fglgui)")
-  ELSE
+    CALL handleFGLDB()
+  WHEN g_remote_host IS NOT NULL
+    DISPLAY "g_remote_host set to:",g_remote_host
+    CALL split_host() RETURNING host, port
+    CALL connect_mobile(g_channel, host, port)
+    CALL handleFGLDB()
+  OTHERWISE
     CALL g_channel.openpipe(program,"u")
     CALL g_channel.setDelimiter("")
     DISPLAY "program is: \"",program,"\", status is:",status
@@ -463,7 +482,7 @@ FUNCTION open_program()
     ELSE
       CALL deb_write("set prompt (fglgui)\\n")
     END IF
-  END IF
+  END CASE
   LET g_active=1
   LET g_show_output=TRUE
   CALL deb_write("set annotate 1")
@@ -524,6 +543,42 @@ FUNCTION attach_to_process(c, pid)
   END TRY
 END FUNCTION
 
+FUNCTION split_host()
+  DEFINE x, host,portstr STRING
+  DEFINE idx, port INT
+  LET x = g_remote_host
+  LET idx = x.getIndexOf(":", 1)
+  IF idx > 0 THEN
+    LET host = x.subString(1, idx - 1)
+    LET portstr = x.subString(idx + 1, x.getLength())
+    LET port=portstr
+    IF port IS NULL THEN
+      DISPLAY sfmt("ERROR: port:illegal value:%1",portstr)
+      EXIT PROGRAM 1
+    END IF
+  ELSE
+    LET host = x
+    LET port = 6400
+  END IF
+  RETURN host, port
+END FUNCTION
+
+FUNCTION connect_mobile(c, host, port)
+  DEFINE c base.Channel
+  DEFINE host STRING
+  DEFINE port INT
+  DEFINE m STRING
+  TRY
+    CALL c.openClientSocket(host, port, "u", 10);
+  CATCH
+    LET m = err_get(status)
+    DISPLAY SFMT("ERROR: connect to remote %1:%2 failed.",
+        host, port);
+    DISPLAY m
+    EXIT PROGRAM 1
+  END TRY
+END FUNCTION
+
 FUNCTION waitPrompt(c)
   CONSTANT prompt = "(fgldb)"
   DEFINE c base.Channel
@@ -537,7 +592,6 @@ FUNCTION waitPrompt(c)
     DISPLAY "debuggee closed in waitPrompt()"
     EXIT PROGRAM 1
   END IF
-  DISPLAY "waitPrompt ready"
 END FUNCTION
 
 FUNCTION no_source()
@@ -819,6 +873,14 @@ FUNCTION do_stepout_int()
   CALL do_debugger_step_cmd("finish")
 END FUNCTION
 
+FUNCTION checkFGL30000(opt)
+  DEFINE opt STRING
+  IF fgl_getversion() < 30000 THEN
+    DISPLAY opt," option not supported for FGL < 3.00"
+    EXIT PROGRAM 1
+ END IF
+END FUNCTION
+
 FUNCTION prepare_args(arg_arr,debugger_args)
   DEFINE arg_arr DYNAMIC ARRAY OF STRING
   DEFINE debugger_args INT
@@ -829,14 +891,13 @@ FUNCTION prepare_args(arg_arr,debugger_args)
     IF arg_val(i) = "--" THEN
       LET debugger_args=1
     ELSE IF arg_val(i) = "\\-\\-" THEN
-      IF debugger_args=0 THEN
+      IF NOT debugger_args THEN
         LET arg_count=arg_count+1
         LET arg_arr[arg_count]="--"
       END IF
     ELSE
-      IF debugger_args=0 THEN
+      IF NOT debugger_args THEN
         LET arg_count=arg_count+1
-        --DISPLAY "arg_count is ",arg_count
         LET arg_arr[arg_count]=arg_val(i)
       ELSE
         CASE
@@ -856,15 +917,22 @@ FUNCTION prepare_args(arg_arr,debugger_args)
           WHEN arg_val(i)="-p" OR arg_val(i)="--pid"
             LET g_program_pid = arg_val(i+1)
             LET i = i + 1
-            IF fgl_getversion() < 30000 THEN
-              DISPLAY "-p or --pid option not supported for FGL < 3.00"
-              EXIT PROGRAM 1
+            CALL checkFGL30000("-p or --pid")
+          WHEN arg_val(i)="-m" OR arg_val(i)="--remote"
+            LET g_remote_host = arg_val(i+1)
+            LET i = i + 1
+            CALL checkFGL30000("-m or --remote")
+          OTHERWISE
+            LET args=args.append(arg_val(i))
+            IF args IS NOT NULL THEN
+              LET args=args.append(" ")
             END IF
         END CASE
       END IF
     END IF
     END IF
   END FOR
+  --arg_count is 0 if debbugger_args==TRUE
   FOR i=1 TO arg_count
     IF i=1 THEN
       LET program=arg_arr[i]
@@ -885,11 +953,10 @@ FUNCTION parse_args()
   DEFINE arg_arr DYNAMIC ARRAY OF String
   DEFINE program,arg,args,dummy String
   LET g_verbose=0
-  LET debugger_args=0
   LET arg_count=0
   LET program=""
   --DISPLAY "num_args are:",num_args()
-  CALL prepare_args(arg_arr,debugger_args) RETURNING program,args
+  CALL prepare_args(arg_arr,FALSE) RETURNING program,args
   IF g_verbose THEN
     DISPLAY "parse_args1:program is \"",program,"\", args are \"",args,"\""
   END IF
@@ -900,14 +967,23 @@ FUNCTION parse_args()
     --to avoid being forced using 'fgldeb -- -p <pid>'
     CALL prepare_args(arg_arr,TRUE) RETURNING dummy,dummy
     LET program=""
+    LET args=""
   END IF
-  IF (program IS NULL AND g_program_pid IS NULL ) OR
-    ( program == "-h" OR program == "--help") THEN
-    CALL arg_help()
-  ELSE IF ( program == "-V" OR program == "--version") THEN
-    CALL display_version()
+  IF (program.getIndexOf("-",1)==1 AND g_remote_host IS NULL ) AND
+    (find_string_in_array("-m",arg_arr)<>0 OR
+     find_string_in_array("--remote",arg_arr)<>0 ) THEN
+    --just reparse and pretend we did see a "--"
+    --to avoid being forced using 'fgldeb -- -m <host?:port?>'
+    CALL prepare_args(arg_arr,TRUE) RETURNING dummy,args
+    LET program=""
   END IF
-  END IF  
+  CASE
+    WHEN (program IS NULL AND NOT pidOrRemote()) OR
+    ( program == "-h" OR program == "--help")
+      CALL arg_help()
+    WHEN program == "-V" OR program == "--version"
+      CALL display_version()
+  END CASE
   RETURN program,args
 END FUNCTION
 
@@ -923,6 +999,10 @@ FUNCTION arg_help()
   DISPLAY "  Attach option:"
   DISPLAY "    -p <pid> or --pid <pid> :"
   DISPLAY "                        attach to fglrun process with pid"
+  DISPLAY "Usage 3: fgldeb [debuggeropts + remoteopt]"
+  DISPLAY "  Remote option:"
+  DISPLAY "    -m <host?:port?> or --remote <host?:port?> :"
+  DISPLAY "                        attach to remote host(mobile,wasm)"
   EXIT PROGRAM 0
 END FUNCTION
 
@@ -1283,7 +1363,7 @@ FUNCTION get_deb_out_int()
   LET idx=0
   --read in the lines from the channel
   WHILE 1
-    IF g_program_pid IS NOT NULL THEN
+    IF pidOrRemote() THEN
       LET linestr = _readLine(g_channel)
       IF g_channel.isEof() THEN
         LET result=0
@@ -2102,7 +2182,7 @@ FUNCTION do_quit(state)
   DEFINE state STRING
   DEFINE detach INT
   -- postpone this until stable
-  IF g_program_pid IS NOT NULL THEN
+  IF pidOrRemote() IS NOT NULL THEN
     MENU ATTRIBUTE(STYLE="dialog",COMMENT="Detach or exit from program ?\n(Detach lets the progam continue.)")
       COMMAND "Detach"
         LET detach=TRUE
@@ -2210,7 +2290,11 @@ FUNCTION deb_write (cmd)
       DISPLAY "<<write \"",cmd,"\",count :",g_cmdcount
     END IF
   END IF
-  CALL g_channel.write(cmd)
+  IF FALSE AND pidOrRemote() THEN
+    CALL g_channel.writeLine(cmd)
+  ELSE
+    CALL g_channel.write(cmd)
+  END IF
   LET g_last_deb_cmd=cmd
 END FUNCTION
 
@@ -6175,3 +6259,8 @@ FUNCTION _readOctets(channel,length)
   RETURN " " CLIPPED
 END FUNCTION
 &endif
+
+--returns true whether we do attach via pid or remote
+FUNCTION pidOrRemote()
+  RETURN g_program_pid IS NOT NULL OR g_remote_host IS NOT NULL
+END FUNCTION
