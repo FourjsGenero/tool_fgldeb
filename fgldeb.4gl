@@ -2182,7 +2182,7 @@ FUNCTION do_quit(state)
   DEFINE state STRING
   DEFINE detach INT
   -- postpone this until stable
-  IF pidOrRemote() IS NOT NULL THEN
+  IF pidOrRemote() THEN
     MENU ATTRIBUTE(STYLE="dialog",COMMENT="Detach or exit from program ?\n(Detach lets the progam continue.)")
       COMMAND "Detach"
         LET detach=TRUE
@@ -2290,11 +2290,7 @@ FUNCTION deb_write (cmd)
       DISPLAY "<<write \"",cmd,"\",count :",g_cmdcount
     END IF
   END IF
-  IF FALSE AND pidOrRemote() THEN
-    CALL g_channel.writeLine(cmd)
-  ELSE
-    CALL g_channel.write(cmd)
-  END IF
+  CALL g_channel.write(cmd)
   LET g_last_deb_cmd=cmd
 END FUNCTION
 
