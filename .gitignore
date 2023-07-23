@@ -1,5 +1,5 @@
-*.42?
-bin
-*.4pwdb
-*.4pwvs
-*.4pwcfg
+# Ignore build files
+*.42m
+*.42f
+*.42r
+*.fgldeb
