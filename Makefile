@@ -4,14 +4,10 @@ PROGMOD=fgldeb.42m
 ifndef FGLDIR
   $(error FGLDIR must be set)
 endif
-#quote against the crazy GST pathes containing spaces
-MYFGLDIR=$(shell FGLDIR="$(FGLDIR)";echo $${FGLDIR// /\\ })
 
-#if we have fgldb in $FGLDIR/bin we can attach to fgl processes
-ifneq ($(wildcard $(MYFGLDIR)/bin/fgldb),)
+ifneq (,$(shell which fgldb))
 FGLCOMPDEFINES=-D HAVE_FGLDB
 endif
-
 
 all: $(PROGMOD) $(FORMS)
 
