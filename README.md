@@ -95,8 +95,10 @@ Run "fgldeb" to get all available options.
 
 ### Attach to a running fglrun process with fgldeb
 
-Get the process id of the program you want to debug
-and invoke fgldeb with the process id
+This feature only works with FGL versions providing the fgldb debugging tool.
+
+Get the process id of the program you want to debug and invoke fgldeb with the
+process id:
 
 ```
 % fgldeb -p 12345
